@@ -1,5 +1,5 @@
+import { Resource, Bundle } from 'fhir/r4b';
 import { useCallback, useMemo, useState } from 'react';
-import { AidboxResource, Bundle } from 'shared/src/contrib/aidbox';
 
 import { isSuccess, RemoteData } from '../libs/remoteData';
 import { getFHIRResources } from '../services/fhir';
@@ -16,7 +16,7 @@ export interface PagerManager {
     currentPage: number;
 }
 
-export function usePager<T extends AidboxResource>(
+export function usePager<T extends Resource>(
     resourceType: T['resourceType'],
     resourcesOnPage: number = 15,
     searchParams: SearchParams = {}

@@ -1,4 +1,4 @@
-import { OperationOutcome } from 'shared/src/contrib/aidbox';
+import { OperationOutcome } from 'fhir/r4b';
 
 interface BackendError {
     error: string;

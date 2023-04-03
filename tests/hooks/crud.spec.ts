@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { Patient } from 'shared/src/contrib/aidbox';
+import { Patient } from 'fhir/r4b';
 
 import { useCRUD } from '../../src/hooks/crud';
 import { success, failure, loading } from '../../src/libs/remoteData';

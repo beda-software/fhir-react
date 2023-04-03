@@ -1,4 +1,4 @@
-import { Bundle, Patient, Practitioner } from 'shared/src/contrib/aidbox';
+import { Bundle, Patient, Practitioner } from 'fhir/r4b';
 
 import { failure, success } from '../../src/libs/remoteData';
 import {
@@ -86,13 +86,12 @@ describe('Service `fhir`', () => {
 
     describe('method `get`', () => {
         const resource = {
-            id: '1',
-            resourceType: 'Patient',
+            reference: 'Patient/1',
         };
 
         expect(get(resource)).toEqual({
             method: 'GET',
-            url: '/' + resource.resourceType + '/' + resource.id,
+            url: '/Patient/1',
         });
     });
 
@@ -514,13 +513,12 @@ describe('Service `fhir`', () => {
 
         test('delete location resource', () => {
             const resource = {
-                id: '1',
-                resourceType: 'Location',
+                reference: 'Location/1',
             };
 
             expect(markAsDeleted(resource)).toEqual({
                 method: 'PATCH',
-                url: `/${resource.resourceType}/${resource.id}`,
+                url: `/Location/1`,
                 data: {
                     status: 'inactive',
                 },
@@ -539,8 +537,7 @@ describe('Service `fhir`', () => {
 
         test('delete location resource', async () => {
             const resource = {
-                id: '1',
-                resourceType: 'Location',
+                reference: 'Location/1',
             };
 
             await deleteFHIRResource(resource);
@@ -574,13 +571,12 @@ describe('Service `fhir`', () => {
 
     test('method `forceDeleteFHIRResource`', async () => {
         const resource = {
-            resourceType: 'Patient',
-            id: '1',
+            reference: 'Patient/1',
         };
 
         await forceDeleteFHIRResource(resource);
 
-        expect(service).toHaveBeenLastCalledWith(forceDelete(resource.resourceType, resource.id));
+        expect(service).toHaveBeenLastCalledWith(forceDelete('Patient', '1'));
     });
 
     test('method `getReference`', () => {
@@ -589,13 +585,11 @@ describe('Service `fhir`', () => {
         const resource = { id, resourceType };
 
         expect(getReference(resource)).toEqual({
-            id,
-            resourceType,
+            reference: `${resourceType}/${id}`,
         });
 
         expect(getReference(resource, 'value')).toEqual({
-            id,
-            resourceType,
+            reference: `${resourceType}/${id}`,
             display: 'value',
         });
     });
@@ -604,14 +598,13 @@ describe('Service `fhir`', () => {
         const id = '1';
         const resourceType = 'Patient';
 
-        expect(makeReference(resourceType, id)).toEqual({ id, resourceType });
+        expect(makeReference(resourceType, id)).toEqual({ reference: `Patient/1` });
     });
 
     test('method `isReference`', () => {
         expect(
             isReference({
-                id: '1',
-                resourceType: 'Patient',
+                reference: 'Patient/1',
             })
         ).toBeTruthy();
 
@@ -619,7 +612,6 @@ describe('Service `fhir`', () => {
             isReference({
                 id: '1',
                 resourceType: 'Patient',
-                extraField: true,
             })
         ).toBeFalsy();
 
@@ -685,19 +677,19 @@ describe('Service `fhir`', () => {
         };
 
         test('returns resource when it exists', () => {
-            const reference = { id: '1', resourceType: 'customType' };
+            const reference = { reference: 'customType/1' };
 
             expect(getIncludedResource(resources, reference)).toEqual({ id: '1' });
         });
 
         test('returns resource when it exists', () => {
-            const reference = { id: '2', resourceType: 'customType' };
+            const reference = { reference: 'customType/2' };
 
             expect(getIncludedResource(resources, reference)).toBeUndefined();
         });
 
         test("don't returns resource when it exists", () => {
-            const reference = { id: '3', resourceType: 'unknownType' };
+            const reference = { reference: 'unknownType/3' };
 
             expect(getIncludedResource(resources, reference)).toBeUndefined();
         });

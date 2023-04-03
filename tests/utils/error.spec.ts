@@ -141,9 +141,9 @@ describe('Util `tests`', () => {
 
         test('error without description', () => {
             const error = {
-                error: 'aidbox_error',
+                error: 'error_text',
             };
-            const result = `Unknown error (aidbox_error)`;
+            const result = `Unknown error (error_text)`;
 
             expect(formatError(error)).toEqual(result);
         });
@@ -163,10 +163,10 @@ describe('Util `tests`', () => {
 
         test('default format error without description', () => {
             const error = {
-                error: 'aidbox_error',
+                error: 'some_error',
             };
-            const mapping = { aidbox_error: 'Something went wrong with aidbox' };
-            const result = `Something went wrong with aidbox`;
+            const mapping = { some_error: 'Something went wrong' };
+            const result = `Something went wrong`;
 
             expect(formatError(error, { mapping })).toEqual(result);
         });

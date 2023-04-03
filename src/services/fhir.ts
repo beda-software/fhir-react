@@ -1,7 +1,8 @@
 import { AxiosRequestConfig } from 'axios';
-import { AidboxReference, AidboxResource, ValueSet, Bundle, BundleEntry, id } from 'shared/src/contrib/aidbox';
+import { Reference, Resource, ValueSet, Bundle, BundleEntry, BundleEntryRequest } from 'fhir/r4b';
 
 import { isFailure, RemoteDataResult, success, failure } from '../libs/remoteData';
+import { parseFHIRReference } from '../utils/fhir';
 import { buildQueryParams } from './instance';
 import { SearchParams } from './search';
 import { service } from './service';
@@ -16,11 +17,11 @@ interface InactiveMapping {
     [resourceType: string]: InactiveMappingItem;
 }
 
-// This type-wrapper is used to wrap AidboxResource to make `id` attr required
+// This type-wrapper is used to wrap Resource to make `id` attr required
 // It's needed when we make requests to the FHIR server - initially all resources
 // have id non-mandatory, but after request (GET/POST etc) the returned resource always
 // has id.
-export type WithId<T extends AidboxResource> = T & Required<Pick<T, 'id'>>;
+export type WithId<T extends Resource> = T & Required<Pick<T, 'id'>>;
 
 const inactiveMapping: InactiveMapping = {
     DocumentReference: {
@@ -91,14 +92,14 @@ function getInactiveSearchParam(resourceType: string) {
     return {};
 }
 
-export async function createFHIRResource<R extends AidboxResource>(
+export async function createFHIRResource<R extends Resource>(
     resource: R,
     searchParams?: SearchParams
 ): Promise<RemoteDataResult<WithId<R>>> {
     return service(create(resource, searchParams));
 }
 
-export function create<R extends AidboxResource>(resource: R, searchParams?: SearchParams): AxiosRequestConfig {
+export function create<R extends Resource>(resource: R, searchParams?: SearchParams): FhirAxiosRequestConfig {
     return {
         method: 'POST',
         url: `/${resource.resourceType}`,
@@ -107,14 +108,14 @@ export function create<R extends AidboxResource>(resource: R, searchParams?: Sea
     };
 }
 
-export async function updateFHIRResource<R extends AidboxResource>(
+export async function updateFHIRResource<R extends Resource>(
     resource: R,
     searchParams?: SearchParams
 ): Promise<RemoteDataResult<WithId<R>>> {
     return service(update(resource, searchParams));
 }
 
-export function update<R extends AidboxResource>(resource: R, searchParams?: SearchParams): AxiosRequestConfig {
+export function update<R extends Resource>(resource: R, searchParams?: SearchParams): FhirAxiosRequestConfig {
     if (searchParams) {
         return {
             method: 'PUT',
@@ -138,20 +139,18 @@ export function update<R extends AidboxResource>(resource: R, searchParams?: Sea
     throw new Error('Resourse id and search parameters are not specified');
 }
 
-export async function getFHIRResource<R extends AidboxResource>(
-    reference: AidboxReference<R>
-): Promise<RemoteDataResult<WithId<R>>> {
+export async function getFHIRResource<R extends Resource>(reference: Reference): Promise<RemoteDataResult<WithId<R>>> {
     return service(get(reference));
 }
 
-export function get<R extends AidboxResource>(reference: AidboxReference<R>): AxiosRequestConfig {
+export function get(reference: Reference): FhirAxiosRequestConfig {
     return {
         method: 'GET',
-        url: `/${reference.resourceType}/${reference.id}`,
+        url: `/${reference.reference}`,
     };
 }
 
-export async function getFHIRResources<R extends AidboxResource>(
+export async function getFHIRResources<R extends Resource>(
     resourceType: R['resourceType'],
     searchParams: SearchParams,
     extraPath?: string
@@ -159,7 +158,7 @@ export async function getFHIRResources<R extends AidboxResource>(
     return service(list(resourceType, searchParams, extraPath));
 }
 
-export async function getAllFHIRResources<R extends AidboxResource>(
+export async function getAllFHIRResources<R extends Resource>(
     resourceType: string,
     params: SearchParams,
     extraPath?: string
@@ -199,11 +198,11 @@ export async function getAllFHIRResources<R extends AidboxResource>(
     return success(resultBundle);
 }
 
-export function list<R extends AidboxResource>(
+export function list<R extends Resource>(
     resourceType: R['resourceType'],
     searchParams: SearchParams,
     extraPath?: string
-): AxiosRequestConfig {
+): FhirAxiosRequestConfig {
     return {
         method: 'GET',
         url: extraPath ? `/${resourceType}/${extraPath}` : `/${resourceType}`,
@@ -211,7 +210,7 @@ export function list<R extends AidboxResource>(
     };
 }
 
-export async function findFHIRResource<R extends AidboxResource>(
+export async function findFHIRResource<R extends Resource>(
     resourceType: R['resourceType'],
     params: SearchParams,
     extraPath?: string
@@ -236,11 +235,11 @@ export async function findFHIRResource<R extends AidboxResource>(
     }
 }
 
-export async function saveFHIRResource<R extends AidboxResource>(resource: R): Promise<RemoteDataResult<WithId<R>>> {
+export async function saveFHIRResource<R extends Resource>(resource: R): Promise<RemoteDataResult<WithId<R>>> {
     return service(save(resource));
 }
 
-export function save<R extends AidboxResource>(resource: R): AxiosRequestConfig {
+export function save<R extends Resource>(resource: R): FhirAxiosRequestConfig {
     const versionId = resource.meta && resource.meta.versionId;
 
     return {
@@ -251,7 +250,7 @@ export function save<R extends AidboxResource>(resource: R): AxiosRequestConfig 
     };
 }
 
-export async function saveFHIRResources<R extends AidboxResource>(
+export async function saveFHIRResources<R extends Resource>(
     resources: R[],
     bundleType: 'transaction' | 'batch'
 ): Promise<RemoteDataResult<Bundle<WithId<R>>>> {
@@ -280,17 +279,17 @@ type NullableRecursivePartial<T> = {
     [P in keyof T]?: NullableRecursivePartial<T[P]> | null;
 };
 
-export async function patchFHIRResource<R extends AidboxResource>(
-    resource: NullableRecursivePartial<R> & Required<Pick<R, 'id' | 'resourceType'>>,
+export async function patchFHIRResource<R extends Resource>(
+    resource: NullableRecursivePartial<R>,
     searchParams?: SearchParams
 ): Promise<RemoteDataResult<WithId<R>>> {
     return service(patch(resource, searchParams));
 }
 
-export function patch<R extends AidboxResource>(
-    resource: NullableRecursivePartial<R> & Required<Pick<R, 'resourceType'>>,
+export function patch<R extends Resource>(
+    resource: NullableRecursivePartial<R>,
     searchParams?: SearchParams
-): AxiosRequestConfig {
+): FhirAxiosRequestConfig {
     if (searchParams) {
         return {
             method: 'PATCH',
@@ -311,38 +310,50 @@ export function patch<R extends AidboxResource>(
     throw new Error('Resourse id and search parameters are not specified');
 }
 
-export async function deleteFHIRResource<R extends AidboxResource>(
-    resource: AidboxReference<R>
+export async function deleteFHIRResource<R extends Resource>(
+    resource: Reference
 ): Promise<RemoteDataResult<WithId<R>>> {
     return service(markAsDeleted(resource));
 }
 
-export function markAsDeleted<R extends AidboxResource>(resource: AidboxReference<R>): AxiosRequestConfig {
-    const inactiveMappingItem = inactiveMapping[resource.resourceType];
+export function markAsDeleted(reference: Reference): FhirAxiosRequestConfig {
+    const { resourceType, id } = parseFHIRReference(reference)!;
+
+    if (!resourceType) {
+        throw new Error(`resourceType is missing from ${reference}`);
+    }
+
+    const inactiveMappingItem = inactiveMapping[resourceType];
 
     if (!inactiveMappingItem) {
-        throw new Error(`Specify inactiveMapping for ${resource.resourceType} to mark item deleted`);
+        throw new Error(`Specify inactiveMapping for ${resourceType} to mark item deleted`);
     }
 
     return {
         method: 'PATCH',
-        url: `/${resource.resourceType}/${resource.id}`,
+        url: `/${resourceType}/${id}`,
         data: {
             [inactiveMappingItem.statusField]: inactiveMappingItem.value,
         },
     };
 }
 
-export async function forceDeleteFHIRResource<R extends AidboxResource>(
-    resource: AidboxReference<R>
+export async function forceDeleteFHIRResource<R extends Resource>(
+    resource: Reference
 ): Promise<RemoteDataResult<WithId<R>>> {
-    return service(forceDelete(resource.resourceType, resource.id));
+    const reference = parseFHIRReference(resource)!;
+
+    if (!reference.resourceType) {
+        throw new Error(`resourceType is missing from ${reference}`);
+    }
+
+    return service(forceDelete(reference.resourceType, reference.id));
 }
 
-export function forceDelete<R extends AidboxResource>(
+export function forceDelete<R extends Resource>(
     resourceType: R['resourceType'],
-    idOrSearchParams: id | SearchParams
-): AxiosRequestConfig {
+    idOrSearchParams: string | SearchParams
+): FhirAxiosRequestConfig {
     if (isObject(idOrSearchParams)) {
         return {
             method: 'DELETE',
@@ -357,42 +368,31 @@ export function forceDelete<R extends AidboxResource>(
     };
 }
 
-export function getReference<T extends AidboxResource>(resource: T, display?: string): AidboxReference<T> {
+export function getReference<T extends Resource>(resource: T, display?: string): Reference {
     return {
-        resourceType: resource.resourceType,
-        id: resource.id!,
+        reference: `${resource.resourceType}/${resource.id!}`,
         ...(display ? { display } : {}),
     };
 }
 
-export function makeReference<T extends AidboxResource>(
-    resourceType: string,
-    id: string,
-    display?: string
-): AidboxReference<T> {
+export function makeReference(resourceType: string, id: string, display?: string): Reference {
     return {
-        resourceType,
-        id,
-        display,
+        reference: `${resourceType}/${id}`,
+        ...(display ? { display } : {}),
     };
 }
 
-export function isReference<T extends AidboxResource>(
-    resource: T | AidboxReference<T>
-): resource is AidboxReference<T> {
+export function isReference<T extends Resource>(resource: T | Reference): resource is Reference {
     return !Object.keys(resource).filter(
-        (attribute) =>
-            ['id', 'resourceType', '_id', 'resource', 'display', 'identifier', 'uri', 'localRef', 'extension'].indexOf(
-                attribute
-            ) === -1
+        (attribute) => ['reference', 'display', 'identifier', 'type', 'extension'].indexOf(attribute) === -1
     ).length;
 }
 
-export type ResourcesMap<T extends AidboxResource> = {
+export type ResourcesMap<T extends Resource> = {
     [P in T['resourceType']]: T extends { resourceType: P } ? T[] : never;
 };
 
-export function extractBundleResources<T extends AidboxResource>(bundle: Bundle<T>): ResourcesMap<T> {
+export function extractBundleResources<T extends Resource>(bundle: Bundle<T>): ResourcesMap<T> {
     const entriesByResourceType = {} as ResourcesMap<T>;
     const entries = bundle.entry || [];
     entries.forEach(function(entry) {
@@ -408,20 +408,26 @@ export function extractBundleResources<T extends AidboxResource>(bundle: Bundle<
     });
 }
 
-export function getIncludedResource<T extends AidboxResource>(
+export function getIncludedResource<T extends Resource>(
     // TODO: improve type for includedResources: must contain T
     resources: ResourcesMap<T | any>,
-    reference: AidboxReference<T>
+    reference: Reference
 ): T | undefined {
-    const typeResources = resources[reference.resourceType];
+    const { resourceType, id } = parseFHIRReference(reference);
+
+    if (!resourceType) {
+        return undefined;
+    }
+
+    const typeResources = resources[resourceType];
     if (!typeResources) {
         return undefined;
     }
-    const index = typeResources.findIndex((resource: T) => resource.id === reference.id);
+    const index = typeResources.findIndex((resource: T) => resource.id === id);
     return typeResources[index];
 }
 
-export function getIncludedResources<T extends AidboxResource>(
+export function getIncludedResources<T extends Resource>(
     // TODO: improve type for includedResources: must contain T
     resources: ResourcesMap<T | any>,
     resourceType: T['resourceType']
@@ -429,7 +435,7 @@ export function getIncludedResources<T extends AidboxResource>(
     return (resources[resourceType] || []) as T[];
 }
 
-export function getMainResources<T extends AidboxResource>(bundle: Bundle<T>, resourceType: T['resourceType']): T[] {
+export function getMainResources<T extends Resource>(bundle: Bundle<T>, resourceType: T['resourceType']): T[] {
     if (!bundle.entry) {
         return [];
     }
@@ -447,8 +453,8 @@ export function getConcepts(valueSetId: string, params?: SearchParams): Promise<
     });
 }
 
-export async function applyFHIRService<T extends AidboxResource, F = any>(
-    request: AxiosRequestConfig
+export async function applyFHIRService<T extends Resource, F = any>(
+    request: FhirAxiosRequestConfig
 ): Promise<RemoteDataResult<WithId<T>, F>> {
     return service<WithId<T>, F>(request);
 }
@@ -458,7 +464,7 @@ const toCamelCase = (str: string): string => {
     return withFirstLowerLetter.replace(/-/gi, '');
 };
 
-export function transformToBundleEntry<R extends AidboxResource>(config: AxiosRequestConfig): BundleEntry<R> | null {
+export function transformToBundleEntry<R extends Resource>(config: FhirAxiosRequestConfig): BundleEntry<R> | null {
     const { method, url, data, params, headers = [] } = config;
 
     if (!method || !url) {
@@ -483,8 +489,8 @@ export function transformToBundleEntry<R extends AidboxResource>(config: AxiosRe
     };
 }
 
-export async function applyFHIRServices<T extends AidboxResource, F = any>(
-    requests: Array<AxiosRequestConfig>,
+export async function applyFHIRServices<T extends Resource, F = any>(
+    requests: Array<FhirAxiosRequestConfig>,
     type: 'transaction' | 'batch' = 'transaction'
 ): Promise<RemoteDataResult<Bundle<WithId<T>>, F>> {
     return service<Bundle<WithId<T>>, F>({
@@ -495,4 +501,8 @@ export async function applyFHIRServices<T extends AidboxResource, F = any>(
             entry: requests.map(transformToBundleEntry).filter((entry) => entry !== null),
         },
     });
+}
+
+export interface FhirAxiosRequestConfig extends AxiosRequestConfig {
+    method?: BundleEntryRequest['method'];
 }

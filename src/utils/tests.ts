@@ -1,11 +1,5 @@
-import { User } from 'shared/src/contrib/aidbox';
-
-import { isFailure, isSuccess, RemoteData, RemoteDataResult } from '../libs/remoteData';
-import { axiosInstance, resetInstanceToken, setInstanceToken } from '../services/instance';
-import { service } from '../services/service';
-import { Token } from '../services/token';
-
-export type LoginService = (user: User) => Promise<RemoteData<Token>>;
+import { isFailure, isSuccess, RemoteData } from '../libs/remoteData';
+import { axiosInstance } from '../services/instance';
 
 export async function withRootAccess<R>(fn: () => Promise<R>) {
     axiosInstance.defaults.auth = {
@@ -31,35 +25,4 @@ export function investigate<R = any>(result: RemoteData<unknown, R>): R {
         return result.error;
     }
     throw new Error(`Nothing to investigate for ${JSON.stringify(result)}`);
-}
-
-export async function getToken(user: User, loginService: LoginService): Promise<Token> {
-    if (!user.email) {
-        throw new Error('Can not login for user without an email');
-    }
-
-    const result = await loginService(user);
-
-    return ensure(result);
-}
-
-export async function login(user: User, loginService: LoginService): Promise<Token> {
-    resetInstanceToken();
-    const token = await getToken(user, loginService);
-    setInstanceToken(token);
-
-    return token;
-}
-
-export async function getUserInfo(): Promise<User> {
-    const result: RemoteDataResult<User> = await service({
-        method: 'GET',
-        url: '/auth/userinfo',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-    });
-
-    return ensure(result);
 }

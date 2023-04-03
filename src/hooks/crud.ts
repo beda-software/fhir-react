@@ -1,5 +1,5 @@
+import { Resource } from 'fhir/r4b';
 import { useEffect, useState, useCallback } from 'react';
-import { AidboxResource } from 'shared/src/contrib/aidbox';
 
 import { failure, isFailure, isSuccess, loading, notAsked, RemoteData, success } from '../libs/remoteData';
 import {
@@ -13,11 +13,11 @@ import {
 } from '../services/fhir';
 
 export interface CRUDManager<T> {
-    handleSave: (updatedResource: T, relatedResources?: AidboxResource[]) => Promise<RemoteData<T>>;
+    handleSave: (updatedResource: T, relatedResources?: Resource[]) => Promise<RemoteData<T>>;
     handleDelete: (resourceToDelete: T) => void;
 }
 
-export function useCRUD<T extends AidboxResource>(
+export function useCRUD<T extends Resource>(
     resourceType: T['resourceType'],
     id?: string,
     getOrCreate?: boolean,
@@ -53,7 +53,7 @@ export function useCRUD<T extends AidboxResource>(
     return [
         remoteData,
         {
-            handleSave: async (updatedResource: T, relatedResources?: AidboxResource[]) => {
+            handleSave: async (updatedResource: T, relatedResources?: Resource[]) => {
                 // Why do we need relatedResource here?
                 // TODO refactor
                 setRemoteData(loading);
