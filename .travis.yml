@@ -10,4 +10,4 @@ install:
 coverage:
   script: npm run coverage
   on:
-    repo: beda-software/aidbox-react
+    repo: beda-software/fhir-react

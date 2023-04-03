@@ -20,7 +20,7 @@ module.exports = [
                 sourcemap: false,
             },
         ],
-        external: ['axios', 'moment', 'shared/src/contrib/aidbox'],
+        external: ['axios', 'moment'],
         plugins: [
             resolve({
                 browser: true,
