@@ -258,6 +258,7 @@ export async function saveFHIRResources<R extends Resource>(
         method: 'POST',
         url: '/',
         data: {
+            resourceType: 'Bundle',
             type: bundleType,
             entry: resources.map((resource) => {
                 const versionId = resource.meta && resource.meta.versionId;
