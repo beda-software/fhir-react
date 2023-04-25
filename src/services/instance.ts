@@ -42,7 +42,7 @@ export function setInstanceBaseURL(baseURL: string) {
 }
 
 export function setInstanceToken(token: Token) {
-    axiosInstance.defaults.headers.Authorization = `Bearer ${token.access_token}`;
+    axiosInstance.defaults.headers.Authorization = `${token.token_type || 'Bearer'} ${token.access_token}`;
 }
 
 export function resetInstanceToken() {
