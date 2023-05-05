@@ -1,15 +1,15 @@
 import { Resource, Bundle } from 'fhir/r4b';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, RemoteData } from '../libs/remoteData';
-import { getFHIRResources } from '../services/fhir';
+import { isSuccess, notAsked, RemoteData } from '../libs/remoteData';
+import { getFHIRResources, WithId } from '../services/fhir';
 import { SearchParams } from '../services/search';
-import { useService } from './service';
+import { service } from '../services/service';
 
 export interface PagerManager {
     loadNext: () => void;
     loadPrevious: () => void;
-    loadPage: (page: number) => void;
+    loadPage: (page: number, params: SearchParams) => void;
     reload: () => void;
     hasNext: boolean;
     hasPrevious: boolean;
@@ -19,36 +19,67 @@ export interface PagerManager {
 export function usePager<T extends Resource>(
     resourceType: T['resourceType'],
     resourcesOnPage: number = 15,
-    searchParams: SearchParams = {}
+    initialSearchParams: SearchParams = {},
+    initialPage: number = 1
 ): [RemoteData<Bundle<T>>, PagerManager] {
-    const [pageToLoad, setPageToLoad] = useState((searchParams._page as number) ?? 1);
+    const [pageToLoad, setPageToLoad] = useState(initialPage);
     const [reloadsCount, setReloadsCount] = useState(0);
-    const [resources] = useService(
-        () =>
-            getFHIRResources(resourceType, {
+    const [searchParams, setSearchParams] = useState(initialSearchParams);
+    const [response, setResponse] = useState<RemoteData<Bundle<WithId<T>>>>(notAsked);
+
+    useEffect(() => {
+        (async () => {
+            const r = await getFHIRResources(resourceType, {
                 ...searchParams,
                 _count: resourcesOnPage,
-                _page: pageToLoad,
-            }),
-        [pageToLoad, reloadsCount, resourcesOnPage]
+            });
+            setResponse(r);
+        })();
+    }, [resourceType, searchParams, resourcesOnPage, reloadsCount]);
+
+    const nextUrl = useMemo(
+        () => (isSuccess(response) ? response.data.link?.find((link) => link.relation === 'next')?.url : undefined),
+        [response]
     );
 
-    const hasNext = useMemo(
-        () => (isSuccess(resources) ? Boolean(resources.data.link?.some((link) => link.relation === 'next')) : false),
-        [resources]
+    const previousUrl = useMemo(
+        () => (isSuccess(response) ? response.data.link?.find((link) => link.relation === 'previous')?.url : undefined),
+        [response]
     );
 
-    const hasPrevious = useMemo(
-        () =>
-            isSuccess(resources) ? Boolean(resources.data.link?.some((link) => link.relation === 'previous')) : false,
-        [resources]
-    );
+    const loadNext = useCallback(async () => {
+        if (nextUrl) {
+            setPageToLoad((currentPage) => currentPage + 1);
+            const nextResponse = await service<Bundle<WithId<T>>>({
+                url: nextUrl,
+                method: 'GET',
+            });
 
-    const loadNext = useCallback(() => setPageToLoad((currentPage) => currentPage + 1), []);
+            setResponse(nextResponse);
+        }
+    }, [nextUrl]);
 
-    const loadPrevious = useCallback(
-        () => setPageToLoad((currentPage) => (hasPrevious ? currentPage - 1 : currentPage)),
-        [hasPrevious]
+    const loadPrevious = useCallback(async () => {
+        if (previousUrl) {
+            setPageToLoad((currentPage) => currentPage - 1);
+            const previousResponse = await service<Bundle<WithId<T>>>({
+                url: previousUrl,
+                method: 'GET',
+            });
+
+            setResponse(previousResponse);
+        }
+    }, [previousUrl]);
+
+    const loadPage = useCallback(
+        (page: number, params: SearchParams) => {
+            setPageToLoad(page);
+            setSearchParams({
+                ...initialSearchParams,
+                ...params,
+            });
+        },
+        [initialSearchParams]
     );
 
     const reload = useCallback(() => {
@@ -57,14 +88,14 @@ export function usePager<T extends Resource>(
     }, []);
 
     return [
-        resources,
+        response,
         {
             loadNext,
             loadPrevious,
-            loadPage: setPageToLoad,
+            loadPage,
             reload,
-            hasNext,
-            hasPrevious,
+            hasNext: !!nextUrl,
+            hasPrevious: !!previousUrl,
             currentPage: pageToLoad,
         },
     ];
