@@ -32,18 +32,6 @@ describe('Hook `usePager`', () => {
         expect(currentPage).toBe(pageNumber);
     };
 
-    // const checkPage = (parameters: CheckPageParameters) => {
-    //     const { callNumber, pageNumber, searchParams = {} } = parameters;
-    //     const [asyncFunction, [pageToLoad]] = (<jest.Mock>useEffect).mock.calls[callNumber];
-
-    //     asyncFunction();
-
-    //     const [fhirResourceType, fhirSearchParams] = (<jest.Mock>getFHIRResources).mock.calls[callNumber];
-    //     expect(pageToLoad).toBe(pageNumber);
-    //     expect(fhirSearchParams).toEqual({ ...searchParams, _count: resourcesOnPage, _page: pageNumber });
-    //     expect(fhirResourceType).toEqual(resourceType);
-    // };
-
     beforeEach(() => {
         jest.clearAllMocks();
     });

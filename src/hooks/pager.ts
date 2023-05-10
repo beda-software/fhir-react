@@ -1,7 +1,7 @@
 import { Resource, Bundle } from 'fhir/r4b';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, notAsked, RemoteData } from '../libs/remoteData';
+import { isSuccess, loading, notAsked, RemoteData } from '../libs/remoteData';
 import { getFHIRResources, WithId } from '../services/fhir';
 import { SearchParams } from '../services/search';
 import { service } from '../services/service';
@@ -29,6 +29,7 @@ export function usePager<T extends Resource>(
 
     useEffect(() => {
         (async () => {
+            setResponse(loading);
             const r = await getFHIRResources(resourceType, {
                 ...searchParams,
                 _count: resourcesOnPage,
