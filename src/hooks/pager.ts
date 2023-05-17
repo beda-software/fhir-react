@@ -1,4 +1,5 @@
 import { Resource, Bundle } from 'fhir/r4b';
+import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { isSuccess, loading, notAsked, RemoteData } from '../libs/remoteData';
@@ -24,19 +25,30 @@ export function usePager<T extends Resource>(
 ): [RemoteData<Bundle<T>>, PagerManager] {
     const [pageToLoad, setPageToLoad] = useState(initialPage);
     const [reloadsCount, setReloadsCount] = useState(0);
-    const [searchParams, setSearchParams] = useState(initialSearchParams);
+    const [searchParams, setSearchParams] = useState<SearchParams>(initialSearchParams);
     const [response, setResponse] = useState<RemoteData<Bundle<WithId<T>>>>(notAsked);
 
     useEffect(() => {
-        (async () => {
+        if (!_.isEqual(initialSearchParams, searchParams)) {
+            setSearchParams(initialSearchParams);
+        }
+    }, [initialSearchParams, searchParams]);
+
+    const loadResources = useCallback(
+        async (params: SearchParams) => {
             setResponse(loading);
             const r = await getFHIRResources(resourceType, {
-                ...searchParams,
+                ...params,
                 _count: resourcesOnPage,
             });
             setResponse(r);
-        })();
-    }, [resourceType, searchParams, resourcesOnPage, reloadsCount]);
+        },
+        [resourceType, resourcesOnPage]
+    );
+
+    useEffect(() => {
+        (async () => await loadResources(searchParams))();
+    }, [loadResources, searchParams, reloadsCount]);
 
     const nextUrl = useMemo(
         () => (isSuccess(response) ? response.data.link?.find((link) => link.relation === 'next')?.url : undefined),
@@ -73,14 +85,14 @@ export function usePager<T extends Resource>(
     }, [previousUrl]);
 
     const loadPage = useCallback(
-        (page: number, params: SearchParams) => {
+        (page: number, newSearchParams: SearchParams) => {
             setPageToLoad(page);
-            setSearchParams({
-                ...initialSearchParams,
-                ...params,
+            loadResources({
+                ...searchParams,
+                ...newSearchParams,
             });
         },
-        [initialSearchParams]
+        [loadResources, searchParams]
     );
 
     const reload = useCallback(() => {
