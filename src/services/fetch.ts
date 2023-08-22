@@ -1,4 +1,4 @@
-import { RemoteDataResult, failure, success } from "libs/remoteData"
+import { RemoteDataResult, failure, success } from "../libs/remoteData"
 
 export async function service<S = any, F = any>(request: RequestInfo | URL, init?: RequestInit): Promise<RemoteDataResult<S, F>> {
     try {
