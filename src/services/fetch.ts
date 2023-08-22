@@ -6,10 +6,9 @@ export async function service<S = any, F = any>(request: RequestInfo | URL, init
         if (response.ok) {
             return success(await response.json())
         } else {
-            const errorDetails = await response.text()
-            throw Error(`Request failure. Status: ${response.status}. Details: ${errorDetails}`)
+            return failure(await response.text() as any)
         }
     } catch (err: any) {
-        return failure(err.response ? err.response.data : err.message);
+        return failure(err.message);
     }
 }
