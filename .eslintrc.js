@@ -3,6 +3,10 @@ module.exports = {
         'jest/globals': true,
         browser: true,
     },
+    globals: {
+        RequestInfo: 'readonly',
+        RequestInit: 'readonly',
+    },
     root: true,
     extends: ['@react-native-community', 'prettier', 'prettier/react'],
     parser: '@typescript-eslint/parser',
