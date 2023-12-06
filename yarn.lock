@@ -363,9 +363,9 @@
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
 "@beda.software/remote-data@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@beda.software/remote-data/-/remote-data-1.0.0.tgz#6a6b17f386e5032aadb9405bbf35972612258bcc"
-  integrity sha512-oKge67jC+eFSFf2hZtbmRY5I+0TBJ8HEvI2IS3/Kw57TI9PF3L5BJwLA4xTTHXt5DA37Ndj9pipStJRQPKoyyA==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@beda.software/remote-data/-/remote-data-1.0.1.tgz#9d1d5173b210884dad304ee27018431f1b39a4d4"
+  integrity sha512-V1MgAPL9YT5qdIu5tGtMB10NNrpAg9EdtRdKSxhII661u2e0sOOU6ht7WDdK2l9202MzMHryUvODumcRNdufWQ==
   dependencies:
     axios "^1.6.2"
 
