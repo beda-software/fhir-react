@@ -21,6 +21,13 @@ module.exports = {
                 'newlines-between': 'always',
                 pathGroupsExcludedImportTypes: ['builtin'],
                 alphabetize: { order: 'asc', caseInsensitive: true },
+                pathGroups: [
+                    {
+                        pattern: '@beda.software/**',
+                        group: 'external',
+                        position: 'after',
+                    },
+                ],
             },
         ],
     },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { uuid4 } from '../utils/uuid';
 import { createBus } from './bus';
+import { uuid4 } from '../utils/uuid';
 
 export interface StateManager<S> {
     getSharedState: () => S;

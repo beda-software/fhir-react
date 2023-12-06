@@ -1,3 +1,5 @@
+import { useEffect, useState, useCallback, useMemo } from 'react';
+
 import {
     RemoteData,
     RemoteDataResult,
@@ -7,7 +9,6 @@ import {
     notAsked,
     success,
 } from '@beda.software/remote-data';
-import { useEffect, useState, useCallback, useMemo } from 'react';
 
 export interface ServiceManager<S, F> {
     // `reload` just sends signal to reload

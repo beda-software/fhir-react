@@ -1,5 +1,6 @@
-import { RemoteData, isFailure, isLoading, isNotAsked, isSuccess } from '@beda.software/remote-data';
 import React from 'react';
+
+import { RemoteData, isFailure, isLoading, isNotAsked, isSuccess } from '@beda.software/remote-data';
 
 import { formatError } from '../../utils/error';
 
