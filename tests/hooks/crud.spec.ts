@@ -1,8 +1,9 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Patient } from 'fhir/r4b';
 
+import { failure, loading, success } from '@beda.software/remote-data';
+
 import { useCRUD } from '../../src/hooks/crud';
-import { success, failure, loading } from '../../src/libs/remoteData';
 import {
     getFHIRResource,
     saveFHIRResource,

@@ -1,16 +1,22 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Bundle } from 'fhir/r4b';
 
+import { RemoteData, service, success } from '@beda.software/remote-data';
+
 import { PagerManager, usePager } from '../../src/hooks/pager';
-import { RemoteData, success } from '../../src/libs/remoteData';
 import { getFHIRResources } from '../../src/services/fhir';
 import { SearchParams } from '../../src/services/search';
-import { service } from '../../src/services/service';
 
 jest.mock('../../src/services/fhir', () => ({ getFHIRResources: jest.fn() }));
 jest.mock('../../src/hooks/service', () => ({ useService: jest.fn() }));
-jest.mock('../../src/services/service', () => ({ service: jest.fn() }));
-
+jest.mock('@beda.software/remote-data', () => {
+    const originalModule = jest.requireActual('@beda.software/remote-data');
+    return {
+        __esModule: true,
+        ...originalModule,
+        service: jest.fn(),
+    };
+});
 interface CheckPageParameters {
     callNumber: number;
     searchParams?: SearchParams;

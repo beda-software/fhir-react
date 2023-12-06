@@ -1,6 +1,7 @@
 import { Bundle, Patient, Practitioner } from 'fhir/r4b';
 
-import { failure, success } from '../../src/libs/remoteData';
+import { failure, service, success } from '@beda.software/remote-data';
+
 import {
     create,
     createFHIRResource,
@@ -31,10 +32,14 @@ import {
     applyFHIRServices,
     transformToBundleEntry,
 } from '../../src/services/fhir';
-import { service } from '../../src/services/service';
 
-jest.mock('../../src/services/service', () => {
-    return { service: jest.fn() };
+jest.mock('@beda.software/remote-data', () => {
+    const originalModule = jest.requireActual('@beda.software/remote-data');
+    return {
+        __esModule: true,
+        ...originalModule,
+        service: jest.fn(),
+    };
 });
 
 describe('Service `fhir`', () => {
@@ -309,6 +314,7 @@ describe('Service `fhir`', () => {
             method: 'POST',
             url: '/',
             data: {
+                resourceType: 'Bundle',
                 type: bundleType,
                 entry: [
                     {

@@ -1,8 +1,15 @@
-import { success, failure } from '../../src/libs/remoteData';
-import { axiosInstance } from '../../src/services/instance';
+import { axiosInstance, failure, success } from '@beda.software/remote-data';
+
 import { ensure, withRootAccess } from '../../src/utils/tests';
 
-jest.mock('../../src/services/service', () => ({ service: jest.fn() }));
+jest.mock('@beda.software/remote-data', () => {
+    const originalModule = jest.requireActual('@beda.software/remote-data');
+    return {
+        __esModule: true,
+        ...originalModule,
+        service: jest.fn(),
+    };
+});
 
 describe('Util `tests`', () => {
     beforeEach(() => {

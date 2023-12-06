@@ -1,8 +1,9 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import React from 'react';
 
+import { loading, success } from '@beda.software/remote-data';
+
 import { useService } from '../../src/hooks/service';
-import { success, loading } from '../../src/libs/remoteData';
 
 describe('Hook `useService`', () => {
     const data = { custom: 'data' };
