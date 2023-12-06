@@ -1,9 +1,9 @@
+import { service } from '@beda.software/remote-data';
 import { AxiosRequestConfig } from 'axios';
 import { Reference, Resource, ValueSet, Bundle, BundleEntry, BundleEntryRequest } from 'fhir/r4b';
 
 import { buildQueryParams } from './instance';
 import { SearchParams } from './search';
-import { service } from './service';
 import { isFailure, RemoteDataResult, success, failure } from '../libs/remoteData';
 import { parseFHIRReference } from '../utils/fhir';
 
@@ -99,7 +99,7 @@ export async function createFHIRResource<R extends Resource>(
     return service(create(resource, searchParams));
 }
 
-export function create<R extends Resource>(resource: R, searchParams?: SearchParams): FhirAxiosRequestConfig {
+export function create<R extends Resource>(resource: R, searchParams?: SearchParams) {
     return {
         method: 'POST',
         url: `/${resource.resourceType}`,
@@ -115,7 +115,7 @@ export async function updateFHIRResource<R extends Resource>(
     return service(update(resource, searchParams));
 }
 
-export function update<R extends Resource>(resource: R, searchParams?: SearchParams): FhirAxiosRequestConfig {
+export function update<R extends Resource>(resource: R, searchParams?: SearchParams) {
     if (searchParams) {
         return {
             method: 'PUT',
@@ -143,7 +143,7 @@ export async function getFHIRResource<R extends Resource>(reference: Reference):
     return service(get(reference));
 }
 
-export function get(reference: Reference): FhirAxiosRequestConfig {
+export function get(reference: Reference) {
     return {
         method: 'GET',
         url: `/${reference.reference}`,
@@ -202,7 +202,7 @@ export function list<R extends Resource>(
     resourceType: R['resourceType'],
     searchParams: SearchParams,
     extraPath?: string
-): FhirAxiosRequestConfig {
+) {
     return {
         method: 'GET',
         url: extraPath ? `/${resourceType}/${extraPath}` : `/${resourceType}`,
@@ -239,7 +239,7 @@ export async function saveFHIRResource<R extends Resource>(resource: R): Promise
     return service(save(resource));
 }
 
-export function save<R extends Resource>(resource: R): FhirAxiosRequestConfig {
+export function save<R extends Resource>(resource: R) {
     const versionId = resource.meta && resource.meta.versionId;
 
     return {
@@ -287,10 +287,7 @@ export async function patchFHIRResource<R extends Resource>(
     return service(patch(resource, searchParams));
 }
 
-export function patch<R extends Resource>(
-    resource: NullableRecursivePartial<R>,
-    searchParams?: SearchParams
-): FhirAxiosRequestConfig {
+export function patch<R extends Resource>(resource: NullableRecursivePartial<R>, searchParams?: SearchParams) {
     if (searchParams) {
         return {
             method: 'PATCH',
@@ -317,7 +314,7 @@ export async function deleteFHIRResource<R extends Resource>(
     return service(markAsDeleted(resource));
 }
 
-export function markAsDeleted(reference: Reference): FhirAxiosRequestConfig {
+export function markAsDeleted(reference: Reference) {
     const { resourceType, id } = parseFHIRReference(reference)!;
 
     if (!resourceType) {
@@ -354,7 +351,7 @@ export async function forceDeleteFHIRResource<R extends Resource>(
 export function forceDelete<R extends Resource>(
     resourceType: R['resourceType'],
     idOrSearchParams: string | SearchParams
-): FhirAxiosRequestConfig {
+) {
     if (isObject(idOrSearchParams)) {
         return {
             method: 'DELETE',
@@ -459,7 +456,7 @@ export function getConcepts(valueSetId: string, params?: SearchParams): Promise<
 }
 
 export async function applyFHIRService<T extends Resource, F = any>(
-    request: FhirAxiosRequestConfig
+    request: AxiosRequestConfig
 ): Promise<RemoteDataResult<WithId<T>, F>> {
     return service<WithId<T>, F>(request);
 }
@@ -469,7 +466,7 @@ const toCamelCase = (str: string): string => {
     return withFirstLowerLetter.replace(/-/gi, '');
 };
 
-export function transformToBundleEntry<R extends Resource>(config: FhirAxiosRequestConfig): BundleEntry<R> | null {
+export function transformToBundleEntry<R extends Resource>(config: AxiosRequestConfig): BundleEntry<R> | null {
     const { method, url, data, params, headers = [] } = config;
 
     if (!method || !url) {
@@ -481,22 +478,22 @@ export function transformToBundleEntry<R extends Resource>(config: FhirAxiosRequ
     };
 
     ['If-Modified-Since', 'If-Match', 'If-None-Match', 'If-None-Exist'].forEach((header) => {
-        if (headers[header]) {
+        // @ts-expect-error
+        const customHeader: any = headers[header];
+        if (customHeader) {
             // @ts-expect-error
-            request[toCamelCase(header)] = isObject(headers[header])
-                ? buildQueryParams(headers[header])
-                : headers[header];
+            request[toCamelCase(header)] = isObject(headers[header]) ? buildQueryParams(customHeader) : customHeader;
         }
     });
 
     return {
         ...(data ? { resource: data } : {}),
-        request,
+        request: { ...request, method: request.method as BundleEntryRequest['method'] },
     };
 }
 
 export async function applyFHIRServices<T extends Resource, F = any>(
-    requests: Array<FhirAxiosRequestConfig>,
+    requests: Array<AxiosRequestConfig>,
     type: 'transaction' | 'batch' = 'transaction'
 ): Promise<RemoteDataResult<Bundle<WithId<T>>, F>> {
     return service<Bundle<WithId<T>>, F>({
@@ -507,8 +504,4 @@ export async function applyFHIRServices<T extends Resource, F = any>(
             entry: requests.map(transformToBundleEntry).filter((entry) => entry !== null),
         },
     });
-}
-
-export interface FhirAxiosRequestConfig extends AxiosRequestConfig {
-    method?: BundleEntryRequest['method'];
 }
