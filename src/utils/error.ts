@@ -49,6 +49,7 @@ export function formatError(error: any, config: FormatErrorConfig = {}) {
     const errorCode = extractErrorCode(error);
 
     if (errorCode in extendedMapping) {
+        // @ts-expect-error
         return extendedMapping[errorCode];
     }
 

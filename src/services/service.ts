@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 
+import { axiosInstance } from './instance';
 import {
     failure,
     isFailure,
@@ -13,7 +14,6 @@ import {
     loading,
     notAsked,
 } from '../libs/remoteData';
-import { axiosInstance } from './instance';
 
 export async function service<S = any, F = any>(config: AxiosRequestConfig): Promise<RemoteDataResult<S, F>> {
     try {
@@ -103,6 +103,7 @@ export type RemoteDataMap<T, F> = { [P in keyof T]: RemoteData<T[P], F> };
 function createKeysMapTransformer<K = any>(keys: Array<K>) {
     return <S = any, R = any>(data: S): R =>
         keys.reduce((transformed, key, index) => {
+            // @ts-expect-error
             transformed[key] = data[index];
             return transformed;
         }, {} as any);

@@ -1,11 +1,11 @@
 import { AxiosRequestConfig } from 'axios';
 import { Reference, Resource, ValueSet, Bundle, BundleEntry, BundleEntryRequest } from 'fhir/r4b';
 
-import { isFailure, RemoteDataResult, success, failure } from '../libs/remoteData';
-import { parseFHIRReference } from '../utils/fhir';
 import { buildQueryParams } from './instance';
 import { SearchParams } from './search';
 import { service } from './service';
+import { isFailure, RemoteDataResult, success, failure } from '../libs/remoteData';
+import { parseFHIRReference } from '../utils/fhir';
 
 interface InactiveMappingItem {
     searchField: string;
@@ -396,15 +396,19 @@ export type ResourcesMap<T extends Resource> = {
 export function extractBundleResources<T extends Resource>(bundle: Bundle<T>): ResourcesMap<T> {
     const entriesByResourceType = {} as ResourcesMap<T>;
     const entries = bundle.entry || [];
-    entries.forEach(function(entry) {
+    entries.forEach(function (entry) {
         const type = entry.resource!.resourceType;
+        // @ts-expect-error
         if (!entriesByResourceType[type]) {
+            // @ts-expect-error
             entriesByResourceType[type] = [];
         }
+        // @ts-expect-error
         entriesByResourceType[type].push(entry.resource);
     });
 
     return new Proxy(entriesByResourceType, {
+        // @ts-expect-error
         get: (obj, prop) => (obj.hasOwnProperty(prop) ? obj[prop] : []),
     });
 }
@@ -478,6 +482,7 @@ export function transformToBundleEntry<R extends Resource>(config: FhirAxiosRequ
 
     ['If-Modified-Since', 'If-Match', 'If-None-Match', 'If-None-Exist'].forEach((header) => {
         if (headers[header]) {
+            // @ts-expect-error
             request[toCamelCase(header)] = isObject(headers[header])
                 ? buildQueryParams(headers[header])
                 : headers[header];
