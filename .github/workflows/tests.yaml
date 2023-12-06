@@ -1,0 +1,25 @@
+name: run tests and typecheck
+on: push
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [16, 18, 20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }}
+      - name: Restore yarn project dependencies
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-build-yarn-${{ hashFiles('./yarn.lock') }}
+          path: |
+            ./node_modules/
+      - name: Install project dependencies
+        run: yarn install
+      - name: Check types
+        run: yarn typecheck
+      - name: Run tests
+        run: yarn test
