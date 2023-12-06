@@ -8,7 +8,7 @@ module.exports = {
         RequestInit: 'readonly',
     },
     root: true,
-    extends: ['@react-native-community', 'prettier', 'prettier/react'],
+    extends: ['prettier'],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint', 'jest', 'import'],
     rules: {
