@@ -1,9 +1,5 @@
-export * from './libs/remoteData';
-
-export * from './services/token';
-export * from './services/instance';
+export * from '@beda.software/remote-data';
 export * from './services/search';
-export * from './services/service';
 export * from './services/fhir';
 
 export * from './utils/date';

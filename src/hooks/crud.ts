@@ -1,7 +1,7 @@
+import { RemoteData, failure, isFailure, isSuccess, loading, notAsked, success } from '@beda.software/remote-data';
 import { Resource } from 'fhir/r4b';
 import { useEffect, useState, useCallback } from 'react';
 
-import { failure, isFailure, isSuccess, loading, notAsked, RemoteData, success } from '../libs/remoteData';
 import {
     deleteFHIRResource,
     extractBundleResources,

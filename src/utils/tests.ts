@@ -1,5 +1,4 @@
-import { isFailure, isSuccess, RemoteData } from '../libs/remoteData';
-import { axiosInstance } from '../services/instance';
+import { RemoteData, axiosInstance, isFailure, isSuccess } from '@beda.software/remote-data';
 
 export async function withRootAccess<R>(fn: () => Promise<R>) {
     axiosInstance.defaults.auth = {

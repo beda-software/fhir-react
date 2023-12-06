@@ -1,10 +1,8 @@
-import { service } from '@beda.software/remote-data';
+import { RemoteDataResult, buildQueryParams, failure, isFailure, service, success } from '@beda.software/remote-data';
 import { AxiosRequestConfig } from 'axios';
 import { Reference, Resource, ValueSet, Bundle, BundleEntry, BundleEntryRequest } from 'fhir/r4b';
 
-import { buildQueryParams } from './instance';
 import { SearchParams } from './search';
-import { isFailure, RemoteDataResult, success, failure } from '../libs/remoteData';
 import { parseFHIRReference } from '../utils/fhir';
 
 interface InactiveMappingItem {

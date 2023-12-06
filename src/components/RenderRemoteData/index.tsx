@@ -1,6 +1,6 @@
+import { RemoteData, isFailure, isLoading, isNotAsked, isSuccess } from '@beda.software/remote-data';
 import React from 'react';
 
-import { isFailure, isLoading, isNotAsked, isSuccess, RemoteData } from '../../libs/remoteData';
 import { formatError } from '../../utils/error';
 
 interface RenderConfig<E = any> {
@@ -41,7 +41,7 @@ export function RenderRemoteData<S, E = any>(props: RenderRemoteDataProps<S, E>)
 }
 
 export function withRender<E = any>(config: RenderConfig<E>) {
-    return function<S>(props: RenderRemoteDataProps<S, E>) {
+    return function <S>(props: RenderRemoteDataProps<S, E>) {
         return <RenderRemoteData {...config} {...props} />;
     };
 }

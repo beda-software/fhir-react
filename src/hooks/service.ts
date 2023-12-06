@@ -1,6 +1,13 @@
+import {
+    RemoteData,
+    RemoteDataResult,
+    failure,
+    isSuccess,
+    loading,
+    notAsked,
+    success,
+} from '@beda.software/remote-data';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-
-import { loading, notAsked, RemoteData, RemoteDataResult, success, failure, isSuccess } from '../libs/remoteData';
 
 export interface ServiceManager<S, F> {
     // `reload` just sends signal to reload
@@ -27,7 +34,6 @@ export function useService<S = any, F = any>(
         } catch (err: any) {
             return failure(err.response ? err.response.data : err.message);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps);
 
     const softReloadAsync = useCallback(async () => {
@@ -35,7 +41,6 @@ export function useService<S = any, F = any>(
         setRemoteData(response);
 
         return response;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, load]);
 
     const reloadAsync = useCallback(async () => {
@@ -44,7 +49,6 @@ export function useService<S = any, F = any>(
         setRemoteData(response);
 
         return response;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, load]);
 
     useEffect(() => {
@@ -52,7 +56,6 @@ export function useService<S = any, F = any>(
             setRemoteData(loading);
             setRemoteData(await load());
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, reloadsCount, load]);
 
     const set = useCallback((dataOrFn: S | ((data: S) => S)) => {
@@ -61,7 +64,6 @@ export function useService<S = any, F = any>(
         } else {
             setRemoteData(success(dataOrFn));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps);
 
     const manager = useMemo(
