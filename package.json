@@ -1,5 +1,5 @@
 {
-    "name": "fhir-react",
+    "name": "@beda.software/fhir-react",
     "version": "1.7.0",
     "scripts": {
         "build": "tsc",
