@@ -2,7 +2,7 @@ import { Resource, Bundle } from 'fhir/r4b';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, loading, notAsked, RemoteData, service } from '@beda.software/remote-data';
+import { isSuccess, loading, notAsked, RemoteData } from '@beda.software/remote-data';
 
 import { getFHIRResources, WithId } from '../services/fhir';
 import { SearchParams } from '../services/search';
