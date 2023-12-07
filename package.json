@@ -1,6 +1,7 @@
 {
     "name": "@beda.software/fhir-react",
     "version": "1.7.0",
+    "keywords": ["fhir"],
     "scripts": {
         "build": "tsc",
         "coverage": "jest --config=./jest.config.json --coverage --coverageReporters=text-lcov | coveralls",
