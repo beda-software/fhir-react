@@ -11,7 +11,7 @@
         "typecheck": "tsc -p tsconfig.base.json"
     },
     "dependencies": {
-        "@beda.software/remote-data": "^1.0.1",
+        "@beda.software/remote-data": "^1.1.0",
         "axios": "^1.6.2",
         "lodash": "^4.17.21",
         "moment": "^2.29.1"
