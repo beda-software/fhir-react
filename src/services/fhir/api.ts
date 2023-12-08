@@ -1,7 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { Bundle, Reference, Resource, ValueSet } from 'fhir/r4b';
 import { SearchParams } from 'services/search';
-import { parseFHIRReference } from 'utils/fhir';
 
 import { RemoteDataResult, failure, isFailure, success } from '@beda.software/remote-data';
 
@@ -18,6 +17,7 @@ import {
     transformToBundleEntry,
     update,
 } from './apiConfigs';
+import { parseFHIRReference } from '../../utils/fhir';
 
 export async function createFHIRResource<R extends Resource>(
     service: RequestService,

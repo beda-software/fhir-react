@@ -1,8 +1,9 @@
 import { AxiosRequestConfig } from 'axios';
 import { Reference, Resource, Bundle } from 'fhir/r4b';
-import { parseFHIRReference } from 'utils/fhir';
 
 import { RemoteDataResult } from '@beda.software/remote-data';
+
+import { parseFHIRReference } from '../../utils/fhir';
 
 export * from './apiConfigs';
 
