@@ -103,6 +103,7 @@ export function initServices(baseURL?: string) {
         ): Promise<RemoteDataResult<Bundle<WithId<R>>, F>> => {
             return await applyFHIRServices<R, F>(service, requests, type);
         },
+        service,
         ...rest,
     };
 }
