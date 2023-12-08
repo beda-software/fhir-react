@@ -1,6 +1,8 @@
-import { RemoteData, axiosInstance, isFailure, isSuccess } from '@beda.software/remote-data';
+import { AxiosInstance } from 'axios';
 
-export async function withRootAccess<R>(fn: () => Promise<R>) {
+import { RemoteData, isFailure, isSuccess } from '@beda.software/remote-data';
+
+export async function withRootAccess<R>(axiosInstance: AxiosInstance, fn: () => Promise<R>) {
     axiosInstance.defaults.auth = {
         username: 'root',
         password: 'secret',

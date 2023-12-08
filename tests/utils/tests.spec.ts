@@ -1,15 +1,7 @@
-import { axiosInstance, failure, success } from '@beda.software/remote-data';
+import { failure, success } from '@beda.software/remote-data';
 
+import { initServices } from '../../src/services';
 import { ensure, withRootAccess } from '../../src/utils/tests';
-
-jest.mock('@beda.software/remote-data', () => {
-    const originalModule = jest.requireActual('@beda.software/remote-data');
-    return {
-        __esModule: true,
-        ...originalModule,
-        service: jest.fn(),
-    };
-});
 
 describe('Util `tests`', () => {
     beforeEach(() => {
@@ -18,12 +10,13 @@ describe('Util `tests`', () => {
     });
 
     describe('method `withRootAccess`', () => {
+        const { axiosInstance } = initServices();
         test('correct async function', async () => {
             const fn = jest.fn(async () => {});
 
             const beforeAuth = axiosInstance.defaults.auth;
 
-            await withRootAccess(fn);
+            await withRootAccess(axiosInstance, fn);
 
             expect(fn.mock.calls[0]).toEqual([]);
             expect(axiosInstance.defaults.auth).toEqual(beforeAuth);
@@ -34,7 +27,7 @@ describe('Util `tests`', () => {
                 throw new Error('custom error');
             });
 
-            await expect(withRootAccess(fn)).rejects.toThrow(Error);
+            await expect(withRootAccess(axiosInstance, fn)).rejects.toThrow(Error);
 
             expect(axiosInstance.defaults.auth).toBeUndefined();
         });
@@ -50,7 +43,7 @@ describe('Util `tests`', () => {
         test('process not `success` result', () => {
             const fn = () => ensure(failure(data));
 
-            expect(fn).toThrowError(`Network error ${JSON.stringify(failure(data))}`);
+            expect(fn).toThrow(`Network error ${JSON.stringify(failure(data))}`);
         });
     });
 });
