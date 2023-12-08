@@ -1,7 +1,8 @@
 import { Bundle, Patient, Practitioner } from 'fhir/r4b';
 
-import { failure, init, success } from '@beda.software/remote-data';
+import { failure, success } from '@beda.software/remote-data';
 
+import { initServices } from '../../src/services';
 import {
     getReference,
     makeReference,
@@ -11,7 +12,6 @@ import {
     getIncludedResources,
     transformToBundleEntry,
 } from '../../src/services/fhir';
-import * as originServices from '../../src/services/fhir/api';
 import * as apiConfigs from '../../src/services/fhir/apiConfigs';
 
 jest.mock('@beda.software/remote-data', () => {
@@ -26,7 +26,8 @@ jest.mock('@beda.software/remote-data', () => {
 });
 
 describe('Service `fhir`', () => {
-    const { service } = init();
+    // const { service } = init();
+    const { service, ...services } = initServices();
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -67,7 +68,7 @@ describe('Service `fhir`', () => {
             resourceType: 'Patient',
         };
 
-        await originServices.createFHIRResource(service, resource);
+        await services.createFHIRResource(resource);
 
         expect(service).toHaveBeenLastCalledWith(apiConfigs.create(resource));
     });
@@ -89,7 +90,7 @@ describe('Service `fhir`', () => {
             resourceType: 'Patient',
         };
 
-        await originServices.getFHIRResource(service, reference);
+        await services.getFHIRResource(reference);
 
         expect(service).toHaveBeenLastCalledWith(apiConfigs.get(reference));
     });
@@ -118,13 +119,13 @@ describe('Service `fhir`', () => {
         const params = { id: 2 };
 
         test('get resource without extra path', async () => {
-            await originServices.getFHIRResources(service, 'user', params);
+            await services.getFHIRResources('user', params);
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.list('user', params));
         });
 
         test('get resource with extra path', async () => {
-            await originServices.getFHIRResources(service, 'user', params, 'extra');
+            await services.getFHIRResources('user', params, 'extra');
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.list('user', params, 'extra'));
         });
@@ -194,7 +195,7 @@ describe('Service `fhir`', () => {
         };
         const searchParams = { param: 'value' };
 
-        await originServices.updateFHIRResource(service, resource, searchParams);
+        await services.updateFHIRResource(resource, searchParams);
 
         expect(service).toHaveBeenLastCalledWith(apiConfigs.update(resource, searchParams));
     });
@@ -251,7 +252,7 @@ describe('Service `fhir`', () => {
                 resourceType: 'Patient',
             };
 
-            await originServices.saveFHIRResource(service, resource);
+            await services.saveFHIRResource(resource);
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.save(resource));
         });
@@ -262,7 +263,7 @@ describe('Service `fhir`', () => {
                 id: '1',
             };
 
-            await originServices.saveFHIRResource(service, resource);
+            await services.saveFHIRResource(resource);
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.save(resource));
         });
@@ -276,7 +277,7 @@ describe('Service `fhir`', () => {
                 },
             };
 
-            await originServices.saveFHIRResource(service, resource);
+            await services.saveFHIRResource(resource);
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.save(resource));
         });
@@ -291,7 +292,7 @@ describe('Service `fhir`', () => {
             { resourceType: 'Patient' },
         ];
 
-        await originServices.saveFHIRResources(service, resources, bundleType);
+        await services.saveFHIRResources(resources, bundleType);
 
         expect(service).toHaveBeenLastCalledWith({
             method: 'POST',
@@ -355,7 +356,7 @@ describe('Service `fhir`', () => {
 
             (<jest.Mock>service).mockResolvedValueOnce(success({ entry: [] }));
 
-            const response = await originServices.findFHIRResource(service, resourceType, params);
+            const response = await services.findFHIRResource(resourceType, params);
             expect(service).toHaveBeenLastCalledWith({
                 method: 'GET',
                 url: `/${resourceType}`,
@@ -376,7 +377,7 @@ describe('Service `fhir`', () => {
             const resource = { resourceType, id };
             (<jest.Mock>service).mockResolvedValueOnce(success({ entry: [{ resource }, { resource }] }));
 
-            const response = await originServices.findFHIRResource(service, resourceType, params);
+            const response = await services.findFHIRResource(resourceType, params);
             expect(service).toHaveBeenLastCalledWith({
                 method: 'GET',
                 url: `/${resourceType}`,
@@ -398,7 +399,7 @@ describe('Service `fhir`', () => {
 
             (<jest.Mock>service).mockResolvedValueOnce(success({ entry: [{ resource }] }));
 
-            const response = await originServices.findFHIRResource(service, resourceType, params);
+            const response = await services.findFHIRResource(resourceType, params);
             expect(service).toHaveBeenLastCalledWith({
                 method: 'GET',
                 url: `/${resourceType}`,
@@ -412,7 +413,7 @@ describe('Service `fhir`', () => {
             const resourceType = 'Patient';
             const extraPath = 'extraPath';
 
-            await originServices.findFHIRResource(service, resourceType, params, extraPath);
+            await services.findFHIRResource(resourceType, params, extraPath);
 
             expect(service).toHaveBeenLastCalledWith({
                 method: 'GET',
@@ -429,7 +430,7 @@ describe('Service `fhir`', () => {
                 resourceType: 'Patient',
             };
 
-            await originServices.patchFHIRResource(service, resource);
+            await services.patchFHIRResource(resource);
 
             expect(apiConfigs.patch(resource)).toEqual({
                 method: 'PATCH',
@@ -445,7 +446,7 @@ describe('Service `fhir`', () => {
             };
             const searchParams = { param: 'value' };
 
-            await originServices.patchFHIRResource(service, resource);
+            await services.patchFHIRResource(resource);
 
             expect(apiConfigs.patch(resource, searchParams)).toEqual({
                 method: 'PATCH',
@@ -472,7 +473,7 @@ describe('Service `fhir`', () => {
             resourceType: 'Patient',
         };
 
-        await originServices.patchFHIRResource(service, resource);
+        await services.patchFHIRResource(resource);
 
         expect(service).toHaveBeenLastCalledWith(apiConfigs.patch(resource));
     });
@@ -509,7 +510,7 @@ describe('Service `fhir`', () => {
                 id: '1',
                 resourceType: 'Unknown',
             };
-            expect(originServices.deleteFHIRResource(service, resource)).rejects.toThrow();
+            expect(services.deleteFHIRResource(resource)).rejects.toThrow();
         });
 
         test('delete location resource', async () => {
@@ -517,7 +518,7 @@ describe('Service `fhir`', () => {
                 reference: 'Location/1',
             };
 
-            await originServices.deleteFHIRResource(service, resource);
+            await services.deleteFHIRResource(resource);
 
             expect(service).toHaveBeenLastCalledWith(apiConfigs.markAsDeleted(resource));
         });
@@ -551,7 +552,7 @@ describe('Service `fhir`', () => {
             reference: 'Patient/1',
         };
 
-        await originServices.forceDeleteFHIRResource(service, resource);
+        await services.forceDeleteFHIRResource(resource);
 
         expect(service).toHaveBeenLastCalledWith(apiConfigs.forceDelete('Patient', '1'));
     });
@@ -701,7 +702,7 @@ describe('Service `fhir`', () => {
             b: 2,
         };
 
-        await originServices.getConcepts(service, valueSetId, params);
+        await services.getConcepts(valueSetId, params);
 
         expect(service).toHaveBeenLastCalledWith({
             method: 'GET',
@@ -715,14 +716,14 @@ describe('Service `fhir`', () => {
             resourceType: 'Patient',
         };
 
-        const result = await originServices.applyFHIRService(service, apiConfigs.create(resource));
+        const result = await services.applyFHIRService(apiConfigs.create(resource));
 
         expect(result).toEqual(success('data'));
     });
 
     describe('method `applyFHIRServices`', () => {
         test('apply transaction', async () => {
-            const result = await originServices.applyFHIRServices(service, [
+            const result = await services.applyFHIRServices([
                 apiConfigs.create({
                     resourceType: 'Patient',
                 }),
@@ -771,11 +772,7 @@ describe('Service `fhir`', () => {
         });
 
         test('apply batch', async () => {
-            const result = await originServices.applyFHIRServices(
-                service,
-                [apiConfigs.forceDelete('Patient', '42')],
-                'batch'
-            );
+            const result = await services.applyFHIRServices([apiConfigs.forceDelete('Patient', '42')], 'batch');
 
             expect(service).toHaveBeenLastCalledWith({
                 url: '/',
