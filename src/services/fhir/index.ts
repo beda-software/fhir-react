@@ -1,14 +1,8 @@
-import { AxiosRequestConfig } from 'axios';
 import { Reference, Resource, Bundle } from 'fhir/r4b';
-
-import { RemoteDataResult } from '@beda.software/remote-data';
 
 import { parseFHIRReference } from '../../utils/fhir';
 
 export * from './apiConfigs';
-
-// TODO: move to remote-data package
-export type RequestService = <S = any, F = any>(config: AxiosRequestConfig<any>) => Promise<RemoteDataResult<S, F>>;
 
 // This type-wrapper is used to wrap Resource to make `id` attr required
 // It's needed when we make requests to the FHIR server - initially all resources

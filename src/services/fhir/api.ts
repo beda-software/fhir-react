@@ -2,9 +2,9 @@ import { AxiosRequestConfig } from 'axios';
 import { Bundle, Reference, Resource, ValueSet } from 'fhir/r4b';
 import { SearchParams } from 'services/search';
 
-import { RemoteDataResult, failure, isFailure, success } from '@beda.software/remote-data';
+import { RemoteDataResult, RequestService, failure, isFailure, success } from '@beda.software/remote-data';
 
-import { RequestService, WithId, extractBundleResources } from '.';
+import { WithId, extractBundleResources } from '.';
 import {
     NullableRecursivePartial,
     create,

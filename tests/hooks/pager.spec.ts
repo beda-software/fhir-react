@@ -1,34 +1,39 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Bundle } from 'fhir/r4b';
 
-import { RemoteData, service, success } from '@beda.software/remote-data';
+import { RemoteData, success } from '@beda.software/remote-data';
 
 import { PagerManager, usePager } from '../../src/hooks/pager';
-import { getFHIRResources } from '../../src/services/fhir';
+import { initServices } from '../../src/services';
+import { getFHIRResources } from '../../src/services/fhir/api';
 import { SearchParams } from '../../src/services/search';
 
-jest.mock('../../src/services/fhir', () => ({ getFHIRResources: jest.fn() }));
+jest.mock('../../src/services/fhir/api', () => ({ getFHIRResources: jest.fn() }));
 jest.mock('../../src/hooks/service', () => ({ useService: jest.fn() }));
 jest.mock('@beda.software/remote-data', () => {
     const originalModule = jest.requireActual('@beda.software/remote-data');
     return {
         __esModule: true,
         ...originalModule,
-        service: jest.fn(),
+        init: jest.fn().mockReturnValue({
+            service: jest.fn(() => Promise.resolve(success('data'))),
+        }),
     };
 });
+
 interface CheckPageParameters {
     callNumber: number;
     searchParams?: SearchParams;
 }
 
 describe('Hook `usePager`', () => {
+    const { service } = initServices();
     const resourceType = 'Bundle';
     const resourcesOnPage = 2;
 
     const checkCall = (parameters: CheckPageParameters) => {
         const { callNumber, searchParams = {} } = parameters;
-        const [fhirResourceType, fhirSearchParams] = (<jest.Mock>getFHIRResources).mock.calls[callNumber];
+        const [_service, fhirResourceType, fhirSearchParams] = (<jest.Mock>getFHIRResources).mock.calls[callNumber];
         expect(fhirSearchParams).toEqual({ ...searchParams, _count: resourcesOnPage });
         expect(fhirResourceType).toEqual(resourceType);
     };
@@ -48,7 +53,9 @@ describe('Hook `usePager`', () => {
 
             (<jest.Mock>getFHIRResources).mockImplementation(() => data);
 
-            const { result, waitForNextUpdate } = renderHook(() => usePager<Bundle<any>>('Bundle'));
+            const { result, waitForNextUpdate } = renderHook(() =>
+                usePager<Bundle<any>>({ resourceType: 'Bundle', requestService: service })
+            );
 
             await waitForNextUpdate();
 
@@ -81,7 +88,7 @@ describe('Hook `usePager`', () => {
             (<jest.Mock>getFHIRResources).mockImplementation(() => data);
 
             const { result, waitForNextUpdate } = renderHook(() =>
-                usePager<Bundle<any>>(resourceType, resourcesOnPage)
+                usePager<Bundle<any>>({ requestService: service, resourceType, resourcesOnPage })
             );
 
             await waitForNextUpdate();
@@ -99,7 +106,9 @@ describe('Hook `usePager`', () => {
 
             (<jest.Mock>getFHIRResources).mockImplementation(() => data);
 
-            const { result, waitForNextUpdate } = renderHook(() => usePager<Bundle<any>>('Bundle'));
+            const { result, waitForNextUpdate } = renderHook(() =>
+                usePager<Bundle<any>>({ requestService: service, resourceType: 'Bundle' })
+            );
 
             await waitForNextUpdate();
 
@@ -136,7 +145,12 @@ describe('Hook `usePager`', () => {
             (<jest.Mock>getFHIRResources).mockImplementation(() => data);
 
             const { result, waitForNextUpdate } = renderHook(() =>
-                usePager<Bundle<any>>(resourceType, resourcesOnPage, { _page: 2 })
+                usePager<Bundle<any>>({
+                    requestService: service,
+                    resourceType,
+                    resourcesOnPage,
+                    initialSearchParams: { _page: 2 },
+                })
             );
 
             await waitForNextUpdate();
@@ -188,7 +202,12 @@ describe('Hook `usePager`', () => {
         (<jest.Mock>service).mockImplementation(() => data2);
 
         const { result, waitForNextUpdate } = renderHook(() =>
-            usePager<Bundle<any>>(resourceType, resourcesOnPage, searchParams)
+            usePager<Bundle<any>>({
+                requestService: service,
+                resourceType,
+                resourcesOnPage,
+                initialSearchParams: searchParams,
+            })
         );
 
         await waitForNextUpdate();
@@ -250,7 +269,13 @@ describe('Hook `usePager`', () => {
         (<jest.Mock>service).mockImplementation(() => data2);
 
         const { result, waitForNextUpdate } = renderHook(() =>
-            usePager<Bundle<any>>(resourceType, resourcesOnPage, searchParams, initialPage)
+            usePager<Bundle<any>>({
+                requestService: service,
+                resourceType,
+                resourcesOnPage,
+                initialSearchParams: searchParams,
+                initialPage,
+            })
         );
 
         await waitForNextUpdate();
@@ -319,7 +344,9 @@ describe('Hook `usePager`', () => {
 
         (<jest.Mock>getFHIRResources).mockImplementationOnce(() => data1).mockImplementationOnce(() => data2);
 
-        const { result, waitForNextUpdate } = renderHook(() => usePager<Bundle<any>>(resourceType, resourcesOnPage));
+        const { result, waitForNextUpdate } = renderHook(() =>
+            usePager<Bundle<any>>({ requestService: service, resourceType, resourcesOnPage })
+        );
 
         await waitForNextUpdate();
 
@@ -347,10 +374,15 @@ describe('Hook `usePager`', () => {
         });
         const searchParams = { a: 1, b: 2 };
 
-        (<jest.Mock>getFHIRResources).mockImplementation(() => data);
+        (<jest.Mock>getFHIRResources).mockResolvedValueOnce(data);
 
         const { result, waitForNextUpdate } = renderHook(() =>
-            usePager<Bundle<any>>(resourceType, resourcesOnPage, searchParams)
+            usePager<Bundle<any>>({
+                requestService: service,
+                resourceType,
+                resourcesOnPage,
+                initialSearchParams: searchParams,
+            })
         );
 
         await waitForNextUpdate();

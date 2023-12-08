@@ -64,14 +64,12 @@ function dispatch<T extends BaseAction>(actionOrType: T | GetOnlyBaseActions<T>[
 type UseBus<T extends BaseAction> = (type: T['type'], callback: Callback<T>, deps: Array<any>) => Dispatch<T>;
 
 function useBus<T extends BaseAction>(type: T['type'], callback: Callback<T>, deps: Array<any>) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         subscribe(type, callback);
 
         return () => {
             unsubscribe(type, callback);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps);
 
     return dispatch;

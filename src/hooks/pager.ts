@@ -2,9 +2,10 @@ import { Resource, Bundle } from 'fhir/r4b';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, loading, notAsked, RemoteData } from '@beda.software/remote-data';
+import { isSuccess, loading, notAsked, RemoteData, RequestService } from '@beda.software/remote-data';
 
-import { getFHIRResources, WithId } from '../services/fhir';
+import { WithId } from '../services/fhir';
+import { getFHIRResources } from '../services/fhir/api';
 import { SearchParams } from '../services/search';
 
 export interface PagerManager {
@@ -17,12 +18,16 @@ export interface PagerManager {
     currentPage: number;
 }
 
-export function usePager<T extends Resource>(
-    resourceType: T['resourceType'],
-    resourcesOnPage: number = 15,
-    initialSearchParams: SearchParams = {},
-    initialPage: number = 1
-): [RemoteData<Bundle<T>>, PagerManager] {
+export interface UsePagerProps<T extends Resource> {
+    resourceType: T['resourceType'];
+    requestService: RequestService;
+    resourcesOnPage?: number;
+    initialSearchParams?: SearchParams;
+    initialPage?: number;
+}
+
+export function usePager<T extends Resource>(props: UsePagerProps<T>): [RemoteData<Bundle<T>>, PagerManager] {
+    const { resourceType, requestService, initialPage = 1, initialSearchParams = {}, resourcesOnPage = 15 } = props;
     const [pageToLoad, setPageToLoad] = useState(initialPage);
     const [reloadsCount, setReloadsCount] = useState(0);
     const [searchParams, setSearchParams] = useState<SearchParams>(initialSearchParams);
@@ -37,7 +42,7 @@ export function usePager<T extends Resource>(
     const loadResources = useCallback(
         async (params: SearchParams) => {
             setResponse(loading);
-            const r = await getFHIRResources(resourceType, {
+            const r = await getFHIRResources<T>(requestService, resourceType, {
                 ...params,
                 _count: resourcesOnPage,
             });
@@ -63,7 +68,7 @@ export function usePager<T extends Resource>(
     const loadNext = useCallback(async () => {
         if (nextUrl) {
             setPageToLoad((currentPage) => currentPage + 1);
-            const nextResponse = await service<Bundle<WithId<T>>>({
+            const nextResponse = await requestService<Bundle<WithId<T>>>({
                 url: nextUrl,
                 method: 'GET',
             });
@@ -75,7 +80,7 @@ export function usePager<T extends Resource>(
     const loadPrevious = useCallback(async () => {
         if (previousUrl) {
             setPageToLoad((currentPage) => currentPage - 1);
-            const previousResponse = await service<Bundle<WithId<T>>>({
+            const previousResponse = await requestService<Bundle<WithId<T>>>({
                 url: previousUrl,
                 method: 'GET',
             });
