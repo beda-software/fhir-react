@@ -89,8 +89,8 @@ export function initServices(baseURL?: string) {
         ): Promise<RemoteDataResult<WithId<R>>> => {
             return await forceDeleteFHIRResource<R>(service, resource);
         },
-        getConcepts: async (valueSetId: string, params?: SearchParams): Promise<RemoteDataResult<ValueSet>> => {
-            return await getConcepts(service, valueSetId);
+        getConcepts: async (valueSetId: string, searchParams?: SearchParams): Promise<RemoteDataResult<ValueSet>> => {
+            return await getConcepts(service, valueSetId, searchParams);
         },
         applyFHIRService: async <R extends Resource, F = any>(
             request: AxiosRequestConfig
