@@ -12,12 +12,10 @@ module.exports = [
             {
                 file: packageJson.main,
                 format: 'cjs',
-                sourcemap: false,
             },
             {
                 file: packageJson.module,
                 format: 'esm',
-                sourcemap: false,
             },
         ],
         external: ['axios', 'moment'],
@@ -27,22 +25,12 @@ module.exports = [
                 preferBuiltins: false,
             }),
             commonjs(),
-            typescript({
-                tsconfig: './tsconfig.json',
-                compilerOptions: {
-                    target: 'es2016',
-                    module: 'ESNext',
-                    moduleResolution: 'node',
-                    sourceMap: false,
-                },
-                include: ['src/**/*'],
-                exclude: ['**/__tests__/**/*', '**/*.test.*'],
-            }),
+            typescript(),
         ],
     },
     {
-        input: 'dist/esm/index.d.ts',
-        output: [{ file: 'dist/index.d.ts', format: 'esm' }],
+        input: 'dist/esm/types/index.d.ts',
+        output: [{ file: 'dist/index.d.ts', format: 'es' }],
         external: [/\.(css|less|scss)$/],
         plugins: [dts.default()],
     },
