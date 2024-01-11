@@ -1,3 +1,7 @@
+## 1.8.0
+
+-   Remote data services moved to the separate package [@beda.software/remote-data](https://www.npmjs.com/package/@beda.software/remote-data)
+
 ## 1.7.0
 
 -   Extend usePager hook with loadPrevious, loadPage, hasPrevious, and currentPage properties.
