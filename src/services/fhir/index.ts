@@ -2,7 +2,6 @@ import { Reference, Resource, Bundle } from 'fhir/r4b';
 
 import { parseFHIRReference } from '../../utils/fhir';
 
-export * from './api';
 export * from './apiConfigs';
 
 // This type-wrapper is used to wrap Resource to make `id` attr required
