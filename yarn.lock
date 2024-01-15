@@ -362,10 +362,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@beda.software/remote-data@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@beda.software/remote-data/-/remote-data-1.1.2.tgz#2208ad26f4b7f56f5885517b11990cbedae81b1e"
-  integrity sha512-KylWiLYRF/mVMfVFrre1sBI/v8jCT2dBgV4+vdQoS5LdGaM/svGRvPHM2VUunrIoQT6uA6/cPf4LPRhP9sY/lA==
+"@beda.software/remote-data@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@beda.software/remote-data/-/remote-data-1.1.3.tgz#edd1194a65796fdffcf45235ff0d9463547d8c29"
+  integrity sha512-HlyAELvpRv1xsoXUFeOnpUxSS+jrZ+zRu3bN7yGi2CD+Py5MzIjm3dy+MD41ZvpoFGlF/0IplIb8RXBm/vzHIg==
   dependencies:
     axios "^1.6.2"
 
