@@ -1,11 +1,11 @@
 import { AxiosRequestConfig } from 'axios';
 import { BundleEntry, BundleEntryRequest, Reference, Resource } from 'fhir/r4b';
 import _ from 'lodash';
+import { SearchParams } from 'services/search';
 
 import { buildQueryParams } from '@beda.software/remote-data';
 
 import { parseFHIRReference } from '../../utils/fhir';
-import { SearchParams } from '../search';
 
 interface InactiveMappingItem {
     searchField: string;

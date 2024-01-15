@@ -52,8 +52,7 @@
     "module": "dist/esm/bundle.js",
     "types": "dist/index.d.ts",
     "files": [
-        "dist/**/*",
-        "src/**/*"
+        "dist/**/*"
     ],
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": "eslint --fix",

@@ -5,6 +5,8 @@
         "moduleResolution": "Node16",
         "lib": ["dom", "es2017"],
         "baseUrl": "./src",
+        "sourceMap": true,
+        "inlineSources": true,
         "outDir": "./dist",
         "declaration": true,
         "declarationMap": true,
