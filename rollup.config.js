@@ -18,14 +18,14 @@ module.exports = [
                 format: 'esm',
             },
         ],
-        external: ['axios', 'moment'],
+        external: ['react', 'axios', 'moment'],
         plugins: [
             resolve({
                 browser: true,
                 preferBuiltins: false,
             }),
             commonjs(),
-            typescript(),
+            typescript({ compilerOptions: { module: 'Node16' } }),
         ],
     },
     {

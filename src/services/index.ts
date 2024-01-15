@@ -1,6 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
 import { Bundle, Reference, Resource, ValueSet } from 'fhir/r4b';
-import { NullableRecursivePartial } from 'services/fhir/apiConfigs';
 
 import { RemoteDataResult, init as remoteDataInit } from '@beda.software/remote-data';
 
@@ -21,6 +20,7 @@ import {
     saveFHIRResources,
     updateFHIRResource,
 } from './fhir/api';
+import { NullableRecursivePartial } from './fhir/apiConfigs';
 import { SearchParams } from './search';
 
 export * from './fhir';
