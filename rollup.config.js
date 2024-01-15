@@ -18,7 +18,7 @@ module.exports = [
                 format: 'esm',
             },
         ],
-        external: ['axios', 'moment'],
+        external: ['axios', 'moment', 'react'],
         plugins: [
             resolve({
                 browser: true,
