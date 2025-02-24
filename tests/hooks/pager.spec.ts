@@ -38,7 +38,7 @@ describe('Hook `usePager`', () => {
         expect(fhirResourceType).toEqual(resourceType);
     };
 
-    const checkPage = (pageNumber: number, result: [RemoteData<Bundle<Bundle<any>>, any>, PagerManager]) => {
+    const checkPage = (pageNumber: number, result: [RemoteData<Bundle<Bundle<any>>, any>, PagerManager<any>]) => {
         const [, { currentPage }] = result;
         expect(currentPage).toBe(pageNumber);
     };
