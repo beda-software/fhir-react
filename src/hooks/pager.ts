@@ -2,17 +2,18 @@ import { Resource, Bundle } from 'fhir/r4b';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, loading, notAsked, RemoteData, RequestService } from '@beda.software/remote-data';
+import { isSuccess, loading, notAsked, success, RemoteData, RequestService } from '@beda.software/remote-data';
 
 import { WithId } from '../services/fhir';
 import { getFHIRResources } from '../services/fhir/api';
 import { SearchParams } from '../services/search';
 
-export interface PagerManager {
+export interface PagerManager<T extends Resource> {
     loadNext: () => void;
     loadPrevious: () => void;
     loadPage: (page: number, params: SearchParams) => void;
     reload: () => void;
+    set: (customResponse: Bundle<WithId<T>>) => void;
     hasNext: boolean;
     hasPrevious: boolean;
     currentPage: number;
@@ -26,7 +27,7 @@ export interface UsePagerProps<T extends Resource> {
     initialPage?: number;
 }
 
-export function usePager<T extends Resource>(props: UsePagerProps<T>): [RemoteData<Bundle<T>>, PagerManager] {
+export function usePager<T extends Resource>(props: UsePagerProps<T>): [RemoteData<Bundle<T>>, PagerManager<T>] {
     const { resourceType, requestService, initialPage = 1, initialSearchParams = {}, resourcesOnPage = 15 } = props;
     const [pageToLoad, setPageToLoad] = useState(initialPage);
     const [reloadsCount, setReloadsCount] = useState(0);
@@ -105,16 +106,20 @@ export function usePager<T extends Resource>(props: UsePagerProps<T>): [RemoteDa
         setReloadsCount((c) => c + 1);
     }, []);
 
-    return [
-        response,
-        {
-            loadNext,
-            loadPrevious,
-            loadPage,
-            reload,
-            hasNext: !!nextUrl,
-            hasPrevious: !!previousUrl,
-            currentPage: pageToLoad,
-        },
-    ];
+    const set = useCallback((customResponse: Bundle<WithId<T>>) => {
+        setResponse(success(customResponse));
+    }, []);
+
+    const pagerManager: PagerManager<T> = {
+        loadNext,
+        loadPrevious,
+        loadPage,
+        reload,
+        set,
+        hasNext: !!nextUrl,
+        hasPrevious: !!previousUrl,
+        currentPage: pageToLoad,
+    };
+
+    return [response, pagerManager];
 }
