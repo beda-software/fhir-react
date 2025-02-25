@@ -1,8 +1,8 @@
 import { Resource, Bundle } from 'fhir/r4b';
 import _ from 'lodash';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isSuccess, loading, notAsked, success, RemoteData, RequestService } from '@beda.software/remote-data';
+import { isSuccess, loading, notAsked, RemoteData, RequestService } from '@beda.software/remote-data';
 
 import { WithId } from '../services/fhir';
 import { getFHIRResources } from '../services/fhir/api';
@@ -13,7 +13,7 @@ export interface PagerManager<T extends Resource> {
     loadPrevious: () => void;
     loadPage: (page: number, params: SearchParams) => void;
     reload: () => void;
-    set: (customResponse: Bundle<WithId<T>>) => void;
+    set: React.Dispatch<SetStateAction<RemoteData<Bundle<WithId<T>>>>>;
     hasNext: boolean;
     hasPrevious: boolean;
     currentPage: number;
@@ -106,16 +106,12 @@ export function usePager<T extends Resource>(props: UsePagerProps<T>): [RemoteDa
         setReloadsCount((c) => c + 1);
     }, []);
 
-    const set = useCallback((customResponse: Bundle<WithId<T>>) => {
-        setResponse(success(customResponse));
-    }, []);
-
     const pagerManager: PagerManager<T> = {
         loadNext,
         loadPrevious,
         loadPage,
         reload,
-        set,
+        set: setResponse,
         hasNext: !!nextUrl,
         hasPrevious: !!previousUrl,
         currentPage: pageToLoad,
