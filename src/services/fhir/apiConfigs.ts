@@ -1,4 +1,4 @@
-import { AxiosRequestConfig } from 'axios';
+import { type AxiosRequestConfig } from 'axios';
 import { BundleEntry, BundleEntryRequest, Reference, Resource } from 'fhir/r4b';
 import _ from 'lodash';
 import { SearchParams } from 'services/search';

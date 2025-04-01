@@ -1,4 +1,4 @@
-import { AxiosRequestConfig } from 'axios';
+import { type AxiosRequestConfig } from 'axios';
 import { Bundle, Reference, Resource, ValueSet } from 'fhir/r4b';
 import { NullableRecursivePartial } from 'services/fhir/apiConfigs';
 

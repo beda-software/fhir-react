@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { type AxiosInstance } from 'axios';
 
 import { RemoteData, isFailure, isSuccess } from '@beda.software/remote-data';
 
