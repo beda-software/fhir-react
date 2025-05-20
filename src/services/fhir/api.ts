@@ -17,22 +17,36 @@ import {
     transformToBundleEntry,
     update,
 } from './apiConfigs';
-import { parseFHIRReference } from '../../utils/fhir';
+import { parseFHIRReference, cleanEmptyValues, removeNullsFromDicts } from '../../utils/fhir';
 
 export async function createFHIRResource<R extends Resource>(
     service: RequestService,
     resource: R,
-    searchParams?: SearchParams
+    searchParams?: SearchParams,
+    dropNullsFromDicts = true
 ): Promise<RemoteDataResult<WithId<R>>> {
-    return service(create(resource, searchParams));
+    let cleanedResource = resource;
+    if (dropNullsFromDicts) {
+        cleanedResource = removeNullsFromDicts(cleanedResource);
+    }
+    cleanedResource = cleanEmptyValues(cleanedResource);
+
+    return service(create(cleanedResource, searchParams));
 }
 
 export async function updateFHIRResource<R extends Resource>(
     service: RequestService,
     resource: R,
-    searchParams?: SearchParams
+    searchParams?: SearchParams,
+    dropNullsFromDicts = true
 ): Promise<RemoteDataResult<WithId<R>>> {
-    return service(update(resource, searchParams));
+    let cleanedResource = resource;
+    if (dropNullsFromDicts) {
+        cleanedResource = removeNullsFromDicts(cleanedResource);
+    }
+    cleanedResource = cleanEmptyValues(cleanedResource);
+
+    return service(update(cleanedResource, searchParams));
 }
 
 export async function getFHIRResource<R extends Resource>(
@@ -120,15 +134,23 @@ export async function findFHIRResource<R extends Resource>(
 
 export async function saveFHIRResource<R extends Resource>(
     service: RequestService,
-    resource: R
+    resource: R,
+    dropNullsFromDicts = true
 ): Promise<RemoteDataResult<WithId<R>>> {
-    return service(save(resource));
+    let cleanedResource = resource;
+    if (dropNullsFromDicts) {
+        cleanedResource = removeNullsFromDicts(cleanedResource);
+    }
+    cleanedResource = cleanEmptyValues(cleanedResource);
+
+    return service(save(cleanedResource));
 }
 
 export async function saveFHIRResources<R extends Resource>(
     service: RequestService,
     resources: R[],
-    bundleType: 'transaction' | 'batch'
+    bundleType: 'transaction' | 'batch',
+    dropNullsFromDicts = true
 ): Promise<RemoteDataResult<Bundle<WithId<R>>>> {
     return service({
         method: 'POST',
@@ -137,14 +159,19 @@ export async function saveFHIRResources<R extends Resource>(
             resourceType: 'Bundle',
             type: bundleType,
             entry: resources.map((resource) => {
-                const versionId = resource.meta && resource.meta.versionId;
+                let cleanedResource = resource;
+                if (dropNullsFromDicts) {
+                    cleanedResource = removeNullsFromDicts(cleanedResource);
+                }
+                cleanedResource = cleanEmptyValues(cleanedResource);
+                const versionId = cleanedResource.meta && cleanedResource.meta.versionId;
 
                 return {
-                    resource,
+                    resource: cleanedResource,
                     request: {
-                        method: resource.id ? 'PUT' : 'POST',
-                        url: `/${resource.resourceType}${resource.id ? '/' + resource.id : ''}`,
-                        ...(resource.id && versionId ? { ifMatch: versionId } : {}),
+                        method: cleanedResource.id ? 'PUT' : 'POST',
+                        url: `/${cleanedResource.resourceType}${cleanedResource.id ? '/' + cleanedResource.id : ''}`,
+                        ...(cleanedResource.id && versionId ? { ifMatch: versionId } : {}),
                     },
                 };
             }),
