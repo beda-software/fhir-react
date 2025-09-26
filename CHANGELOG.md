@@ -2,6 +2,20 @@
 
 -   Add low-level alternative to initServices - initServicesFromService Closes #7
 
+## 1.9.1
+
+-   Update clean FHIR resource logic:
+
+    -   remove fields with null/undefined value;
+    -   remove fields with empty object/array as a value;
+    -   trim null/undefined elements of array value;
+    -   keep null/undefined elements in the array value if there is;
+    -   non empty element with higher index.
+
+## 1.9.0
+
+-   According to FHIR specification fields with empty values are not allowed (including empty objects and arrays). The exception is extension array with null values
+
 ## 1.8.0
 
 -   Remote data services moved to the separate package [@beda.software/remote-data](https://www.npmjs.com/package/@beda.software/remote-data)
