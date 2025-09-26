@@ -26,9 +26,11 @@ import { SearchParams } from './search';
 export * from './fhir';
 export * from './search';
 
-export function initServices(baseURL?: string) {
-    const { service, ...rest } = remoteDataInit(baseURL);
-
+// This function is low-level alternative to initServices
+// it's useful when you already have service initiated and don't want to create new axios instance
+export function initServicesFromService(
+    service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>
+) {
     return {
         createFHIRResource: async <R extends Resource>(
             resource: R,
@@ -104,6 +106,11 @@ export function initServices(baseURL?: string) {
             return await applyFHIRServices<R, F>(service, requests, type);
         },
         service,
-        ...rest,
     };
+}
+
+export function initServices(baseURL?: string) {
+    const { service, ...rest } = remoteDataInit(baseURL);
+
+    return { ...initServicesFromService(service), ...rest };
 }
