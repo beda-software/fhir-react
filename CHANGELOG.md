@@ -1,3 +1,7 @@
+## 1.10.0
+
+-   Add low-level alternative to initServices - initServicesFromService Closes #7
+
 ## 1.8.0
 
 -   Remote data services moved to the separate package [@beda.software/remote-data](https://www.npmjs.com/package/@beda.software/remote-data)
