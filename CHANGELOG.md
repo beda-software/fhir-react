@@ -1,6 +1,6 @@
 ## 1.10.0
 
--   Add low-level alternative to initServices - initServicesFromService Closes #7
+-   Add low-level alternative to initServices - initServicesFromService #7
 
 ## 1.9.1
 
