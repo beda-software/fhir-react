@@ -34,24 +34,22 @@ When we make a request to a server with any of library's methods, we'll probably
 <summary>Simplified example</summary>
 
 ```TypeScript
-import React from 'react';
 import { Patient } from 'fhir/r4b';
-import { getFHIRResource } from 'fhir-react/lib/services/fhir';
-import { isFailure, isSuccess } from 'fhir-react/lib/libs/remoteData';
+import { initServices, makeReference } from '@beda.software/fhir-react';
+import { isFailure, isSuccess } from '@beda.software/remote-data';
+
+const { getFHIRResource } = initServices('<FHIR-server-base-URL>');
 
 async function loadPatientGender() {
-    const patientResponse = await getFHIRResource<Patient>({
-        resourceType: 'Patient',
-        id: 'patient-id',
-    });
+    const patientResponse = await getFHIRResource<Patient>(makeReference('Patient', 'patient-id'));
     if (isSuccess(patientResponse)) {
-        return `Patient name is ${patientResponse.data.gender ?? 'unknown'}`;
+        return `Patient gender is ${patientResponse.data.gender ?? 'unknown'}`;
     }
     if (isFailure(patientResponse)) {
         return `
             Failed to request patient,
             status: ${patientResponse.status},
-            error : ${patientResponse.error}
+            error: ${patientResponse.error}
         `;
     }
 }
@@ -134,6 +132,42 @@ if (isSuccess(qrBundleResponse)) {
         console.log(bundleEntry.resource?.status);
     });
 }
+```
+
+#### InactiveMapping
+
+```typescript
+import { initServices, makeReference } from '@beda.software/fhir-react';
+
+const inactiveMapping: InactiveMapping = {
+    DocumentReference: {
+        searchField: 'status',
+        statusField: 'status',
+        value: 'entered-in-error',
+    },
+    Observation: {
+        searchField: 'status',
+        statusField: 'status',
+        value: 'entered-in-error',
+    },
+    Location: {
+        searchField: 'status',
+        statusField: 'status',
+        value: 'inactive',
+    },
+    Patient: {
+        searchField: 'active',
+        statusField: 'active',
+        value: false,
+    },
+};
+// With this init, `getFHIRResources` / `getAllFHIRResources` automatically
+// exclude inactive patients (and other mapped types), and
+// `deleteFHIRResource(reference)` marks the resource as inactive instead of removing it.
+
+const { getFHIRResource } = initServices('<FHIR-server-base-URL>', inactiveMapping);
+
+// The request will be: GET /Patient?active:not=false
 ```
 
 ### getAllFHIRResources
@@ -260,12 +294,14 @@ const bundleResponse = await saveFHIRResources([
 ], 'transaction');
 ```
 
-### deleteFHIRResource(resources)
+### deleteFHIRResource(resource, inactiveMapping?)
 
-Actually it doesn't delete a resource, just mark it as deleted by altering its status (see `inactiveMapping` list in `fhir.ts`).
+Does not remove the resource; marks it as deleted by updating its status (see `inactiveMapping` in `fhir.ts`). `inactiveMapping` is required: pass it as the second argument or when initializing services (`initServices(baseURL, inactiveMapping)` / `initServicesFromService(service, inactiveMapping)`). If omitted in both places, the method throws.
 
 ```TypeScript
 await deleteFHIRResource(makeReference('Patient', 'patient-id'));
+// or with per-call mapping:
+await deleteFHIRResource(makeReference('Location', 'loc-1'), { Location: { searchField: 'status', statusField: 'status', value: 'inactive' } });
 ```
 
 ### forceDeleteFHIRResource(resource)
