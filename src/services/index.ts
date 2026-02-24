@@ -1,9 +1,10 @@
 import { type AxiosRequestConfig } from 'axios';
 import { Bundle, Reference, Resource, ValueSet } from 'fhir/r4b';
-import { NullableRecursivePartial } from 'services/fhir/apiConfigs';
+import { InactiveMapping, NullableRecursivePartial } from 'services/fhir/apiConfigs';
 
 import { RemoteDataResult, init as remoteDataInit } from '@beda.software/remote-data';
 
+import { defaultInactiveMapping } from './default-inactive-mapping';
 import { WithId } from './fhir';
 import {
     applyFHIRService,
@@ -29,8 +30,11 @@ export * from './search';
 // This function is low-level alternative to initServices
 // it's useful when you already have service initiated and don't want to create new axios instance
 export function initServicesFromService(
-    service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>
+    service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>,
+    inactiveMapping?: InactiveMapping
 ) {
+    const initInactiveMapping = inactiveMapping ?? defaultInactiveMapping;
+
     return {
         createFHIRResource: async <R extends Resource>(
             resource: R,
@@ -52,21 +56,21 @@ export function initServicesFromService(
             searchParams: SearchParams,
             extraPath?: string
         ): Promise<RemoteDataResult<Bundle<WithId<R>>>> => {
-            return await getFHIRResources<R>(service, resourceType, searchParams, extraPath);
+            return await getFHIRResources<R>(service, resourceType, searchParams, extraPath, initInactiveMapping);
         },
         getAllFHIRResources: async <R extends Resource>(
             resourceType: string,
             searchParams: SearchParams,
             extraPath?: string
         ): Promise<RemoteDataResult<Bundle<WithId<R>>>> => {
-            return await getAllFHIRResources<R>(service, resourceType, searchParams, extraPath);
+            return await getAllFHIRResources<R>(service, resourceType, searchParams, extraPath, initInactiveMapping);
         },
         findFHIRResource: async <R extends Resource>(
             resourceType: R['resourceType'],
             searchParams: SearchParams,
             extraPath?: string
         ): Promise<RemoteDataResult<WithId<R>>> => {
-            return await findFHIRResource<R>(service, resourceType, searchParams, extraPath);
+            return await findFHIRResource<R>(service, resourceType, searchParams, extraPath, initInactiveMapping);
         },
         saveFHIRResource: async <R extends Resource>(resource: R): Promise<RemoteDataResult<WithId<R>>> => {
             return await saveFHIRResource<R>(service, resource);
@@ -84,7 +88,7 @@ export function initServicesFromService(
             return await patchFHIRResource<R>(service, resource, searchParams);
         },
         deleteFHIRResource: async <R extends Resource>(resource: Reference): Promise<RemoteDataResult<WithId<R>>> => {
-            return await deleteFHIRResource<R>(service, resource);
+            return await deleteFHIRResource<R>(service, resource, initInactiveMapping);
         },
         forceDeleteFHIRResource: async <R extends Resource>(
             resource: Reference
@@ -109,8 +113,8 @@ export function initServicesFromService(
     };
 }
 
-export function initServices(baseURL?: string) {
+export function initServices(baseURL?: string, inactiveMapping?: InactiveMapping) {
     const { service, ...rest } = remoteDataInit(baseURL);
 
-    return { ...initServicesFromService(service), ...rest };
+    return { ...initServicesFromService(service, inactiveMapping), ...rest };
 }
