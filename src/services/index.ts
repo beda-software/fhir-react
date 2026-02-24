@@ -33,6 +33,13 @@ export function initServicesFromService(
     service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>,
     inactiveMapping?: InactiveMapping
 ) {
+    if (inactiveMapping === undefined) {
+        console.warn(
+            '[fhir-react] Deprecation: Using defaultInactiveMapping is deprecated. ' +
+                'Please provide an explicit inactiveMapping when calling services initialization.'
+        );
+    }
+
     const initInactiveMapping = inactiveMapping ?? defaultInactiveMapping;
 
     return {
