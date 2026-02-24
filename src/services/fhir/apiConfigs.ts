@@ -7,74 +7,21 @@ import { buildQueryParams } from '@beda.software/remote-data';
 
 import { parseFHIRReference } from '../../utils/fhir';
 
-interface InactiveMappingItem {
+export interface InactiveMappingItem {
     searchField: string;
     statusField: string;
     value: any;
 }
 
-interface InactiveMapping {
+export interface InactiveMapping {
     [resourceType: string]: InactiveMappingItem;
 }
-
-const inactiveMapping: InactiveMapping = {
-    DocumentReference: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'entered-in-error',
-    },
-    Observation: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'entered-in-error',
-    },
-    Location: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'inactive',
-    },
-    Schedule: {
-        searchField: 'active',
-        statusField: 'active',
-        value: false,
-    },
-    Slot: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'entered-in-error',
-    },
-    Practitioner: {
-        searchField: 'active',
-        statusField: 'active',
-        value: false,
-    },
-    Patient: {
-        searchField: 'active',
-        statusField: 'active',
-        value: false,
-    },
-    User: {
-        searchField: 'active',
-        statusField: 'active',
-        value: false,
-    },
-    Note: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'entered-in-error',
-    },
-    EpisodeOfCare: {
-        searchField: 'status',
-        statusField: 'status',
-        value: 'entered-in-error',
-    },
-};
 
 export function isObject(value: any): boolean {
     return typeof value === 'object' && value !== null;
 }
 
-function getInactiveSearchParam(resourceType: string) {
+function getInactiveSearchParam(resourceType: string, inactiveMapping: InactiveMapping) {
     const item = inactiveMapping[resourceType];
 
     if (item) {
@@ -133,12 +80,16 @@ export function get(reference: Reference) {
 export function list<R extends Resource>(
     resourceType: R['resourceType'],
     searchParams: SearchParams,
-    extraPath?: string
+    extraPath?: string,
+    inactiveMapping?: InactiveMapping
 ) {
     return {
         method: 'GET',
         url: extraPath ? `/${resourceType}/${extraPath}` : `/${resourceType}`,
-        params: { ...searchParams, ...getInactiveSearchParam(resourceType) },
+        params: {
+            ...searchParams,
+            ...(inactiveMapping ? getInactiveSearchParam(resourceType, inactiveMapping) : {}),
+        },
     };
 }
 
@@ -174,7 +125,7 @@ export function patch<R extends Resource>(resource: NullableRecursivePartial<R>,
     throw new Error('Resourse id and search parameters are not specified');
 }
 
-export function markAsDeleted(reference: Reference) {
+export function markAsDeleted(reference: Reference, inactiveMapping: InactiveMapping) {
     const { resourceType, id } = parseFHIRReference(reference)!;
 
     if (!resourceType) {

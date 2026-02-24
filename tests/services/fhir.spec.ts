@@ -26,7 +26,6 @@ jest.mock('@beda.software/remote-data', () => {
 });
 
 describe('Service `fhir`', () => {
-    // const { service } = init();
     const { service, ...services } = initServices();
     beforeEach(() => {
         jest.clearAllMocks();
@@ -110,6 +109,39 @@ describe('Service `fhir`', () => {
             expect(apiConfigs.list('user', params, 'extra')).toEqual({
                 method: 'GET',
                 url: '/user/extra',
+                params,
+            });
+        });
+
+        test('create axios config with inactiveMapping', () => {
+            const inactiveMapping = {
+                Practitioner: {
+                    searchField: 'active',
+                    statusField: 'active',
+                    value: false,
+                },
+            };
+            expect(apiConfigs.list('Practitioner', params, undefined, inactiveMapping)).toEqual({
+                method: 'GET',
+                url: '/Practitioner',
+                params: {
+                    ...params,
+                    'active:not': [false],
+                },
+            });
+        });
+
+        test('create axios config with inactiveMapping and no mapping for resourceType', () => {
+            const inactiveMapping = {
+                Patient: {
+                    searchField: 'active',
+                    statusField: 'active',
+                    value: false,
+                },
+            };
+            expect(apiConfigs.list('Practitioner', params, undefined, inactiveMapping)).toEqual({
+                method: 'GET',
+                url: '/Practitioner',
                 params,
             });
         });
@@ -484,8 +516,15 @@ describe('Service `fhir`', () => {
                 id: '1',
                 resourceType: 'Unknown',
             };
+            const inactiveMapping = {
+                Patient: {
+                    searchField: 'active',
+                    statusField: 'active',
+                    value: false,
+                },
+            };
             expect(() => {
-                apiConfigs.markAsDeleted(resource);
+                apiConfigs.markAsDeleted(resource, inactiveMapping);
             }).toThrow();
         });
 
@@ -493,8 +532,15 @@ describe('Service `fhir`', () => {
             const resource = {
                 reference: 'Location/1',
             };
+            const inactiveMapping = {
+                Location: {
+                    searchField: 'status',
+                    statusField: 'status',
+                    value: 'inactive',
+                },
+            };
 
-            expect(apiConfigs.markAsDeleted(resource)).toEqual({
+            expect(apiConfigs.markAsDeleted(resource, inactiveMapping)).toEqual({
                 method: 'PATCH',
                 url: `/Location/1`,
                 data: {
@@ -505,22 +551,31 @@ describe('Service `fhir`', () => {
     });
 
     describe('method `deleteFHIRResource`', () => {
-        test('delete unknown resource', async () => {
+        test('throws when inactiveMapping is missing (no init-level or per-call mapping)', async () => {
             const resource = {
                 id: '1',
                 resourceType: 'Unknown',
             };
-            expect(services.deleteFHIRResource(resource)).rejects.toThrow();
+            await expect(services.deleteFHIRResource(resource)).rejects.toThrow(
+                'inactiveMapping is required for deleteFHIRResource. Provide it as the second argument or when initializing services.'
+            );
         });
 
         test('delete location resource', async () => {
             const resource = {
                 reference: 'Location/1',
             };
+            const inactiveMapping = {
+                Location: {
+                    searchField: 'status',
+                    statusField: 'status',
+                    value: 'inactive',
+                },
+            };
 
-            await services.deleteFHIRResource(resource);
+            await services.deleteFHIRResource(resource, inactiveMapping);
 
-            expect(service).toHaveBeenLastCalledWith(apiConfigs.markAsDeleted(resource));
+            expect(service).toHaveBeenLastCalledWith(apiConfigs.markAsDeleted(resource, inactiveMapping));
         });
     });
 

@@ -21,6 +21,7 @@ import {
     saveFHIRResources,
     updateFHIRResource,
 } from './fhir/api';
+import { InactiveMapping } from './fhir/apiConfigs';
 import { SearchParams } from './search';
 
 export * from './fhir';
@@ -29,8 +30,11 @@ export * from './search';
 // This function is low-level alternative to initServices
 // it's useful when you already have service initiated and don't want to create new axios instance
 export function initServicesFromService(
-    service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>
+    service: <S = any, F = any>(config: AxiosRequestConfig) => Promise<RemoteDataResult<S, F>>,
+    inactiveMapping?: InactiveMapping
 ) {
+    const initInactiveMapping = inactiveMapping;
+
     return {
         createFHIRResource: async <R extends Resource>(
             resource: R,
@@ -52,14 +56,14 @@ export function initServicesFromService(
             searchParams: SearchParams,
             extraPath?: string
         ): Promise<RemoteDataResult<Bundle<WithId<R>>>> => {
-            return await getFHIRResources<R>(service, resourceType, searchParams, extraPath);
+            return await getFHIRResources<R>(service, resourceType, searchParams, extraPath, initInactiveMapping);
         },
         getAllFHIRResources: async <R extends Resource>(
             resourceType: string,
             searchParams: SearchParams,
             extraPath?: string
         ): Promise<RemoteDataResult<Bundle<WithId<R>>>> => {
-            return await getAllFHIRResources<R>(service, resourceType, searchParams, extraPath);
+            return await getAllFHIRResources<R>(service, resourceType, searchParams, extraPath, initInactiveMapping);
         },
         findFHIRResource: async <R extends Resource>(
             resourceType: R['resourceType'],
@@ -83,8 +87,17 @@ export function initServicesFromService(
         ): Promise<RemoteDataResult<WithId<R>>> => {
             return await patchFHIRResource<R>(service, resource, searchParams);
         },
-        deleteFHIRResource: async <R extends Resource>(resource: Reference): Promise<RemoteDataResult<WithId<R>>> => {
-            return await deleteFHIRResource<R>(service, resource);
+        deleteFHIRResource: async <R extends Resource>(
+            resource: Reference,
+            inactiveMapping?: InactiveMapping
+        ): Promise<RemoteDataResult<WithId<R>>> => {
+            const mapping = inactiveMapping ?? initInactiveMapping;
+            if (mapping === undefined) {
+                throw new Error(
+                    'inactiveMapping is required for deleteFHIRResource. Provide it as the second argument or when initializing services.'
+                );
+            }
+            return await deleteFHIRResource<R>(service, resource, mapping);
         },
         forceDeleteFHIRResource: async <R extends Resource>(
             resource: Reference
@@ -109,8 +122,8 @@ export function initServicesFromService(
     };
 }
 
-export function initServices(baseURL?: string) {
+export function initServices(baseURL?: string, inactiveMapping?: InactiveMapping) {
     const { service, ...rest } = remoteDataInit(baseURL);
 
-    return { ...initServicesFromService(service), ...rest };
+    return { ...initServicesFromService(service, inactiveMapping), ...rest };
 }
