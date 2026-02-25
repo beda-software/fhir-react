@@ -36,10 +36,11 @@ When we make a request to a server with any of library's methods, we'll probably
 ```TypeScript
 import React from 'react';
 import { Patient } from 'fhir/r4b';
-import { getFHIRResource } from 'fhir-react/lib/services/fhir';
-import { isFailure, isSuccess } from 'fhir-react/lib/libs/remoteData';
+import { initServices } from '@beda.software/fhir-react';
+import { isFailure, isSuccess } from '@beda.software/remote-data';
 
 async function loadPatientGender() {
+    const { getFHIRResource } = initServices('<FHIR server base URL>')
     const patientResponse = await getFHIRResource<Patient>({
         resourceType: 'Patient',
         id: 'patient-id',
@@ -292,6 +293,53 @@ if (isSuccess(createResponse)) {
 
 Set baseURL and token for axios instance using `setInstanceBaseURL` and `setInstanceToken/resetInstanceToken` from `fhir-react/services/instance`
 And use hooks and services
+
+## Service initialization and inactive mapping
+
+When you initialize services with `initServices` or `initServicesFromService`, you can pass an **inactive mapping**. It defines how “inactive” or soft-deleted resources are represented per resource type (e.g. `status: 'entered-in-error'` or `active: false`). The library uses it to filter out inactive entries in list/search results and to soft-delete resources in `deleteFHIRResource`.
+
+**Deprecation:** Relying on the built-in default inactive mapping is deprecated. If you omit the `inactiveMapping` argument, the library still falls back to `defaultInactiveMapping`, but a deprecation warning is printed and `defaultInactiveMapping` will be removed in next major release.
+
+### Recommended: pass an explicit inactive mapping
+
+```TypeScript
+import { initServices } from 'fhir-react/lib/services';
+import type { InactiveMapping } from 'fhir-react/lib/services/fhir/apiConfigs';
+
+const inactiveMapping: InactiveMapping = {
+    Patient: {
+        searchField: 'active',
+        statusField: 'active',
+        value: false,
+    },
+    Practitioner: {
+        searchField: 'active',
+        statusField: 'active',
+        value: false,
+    },
+    Observation: {
+        searchField: 'status',
+        statusField: 'status',
+        value: 'entered-in-error',
+    },
+    // Add other resource types your app uses...
+};
+
+const services = initServices('<FHIR server base URL>', inactiveMapping);
+```
+
+### Using initServicesFromService with explicit mapping
+
+```TypeScript
+import { initServicesFromService } from 'fhir-react/lib/services';
+import type { InactiveMapping } from 'fhir-react/lib/services/fhir/apiConfigs';
+
+const inactiveMapping: InactiveMapping = { /* ... */ };
+
+const services = initServicesFromService(existingAxiosService, inactiveMapping);
+```
+
+Prefer defining your own `InactiveMapping` that only includes the resource types your application uses.
 
 # Examples
 

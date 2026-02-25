@@ -3,6 +3,7 @@ import { Bundle, Patient, Practitioner } from 'fhir/r4b';
 import { failure, success } from '@beda.software/remote-data';
 
 import { initServices } from '../../src/services';
+import { defaultInactiveMapping } from '../../src/services/default-inactive-mapping';
 import {
     getReference,
     makeReference,
@@ -11,6 +12,7 @@ import {
     getIncludedResource,
     getIncludedResources,
     transformToBundleEntry,
+    InactiveMapping,
 } from '../../src/services/fhir';
 import * as apiConfigs from '../../src/services/fhir/apiConfigs';
 
@@ -111,6 +113,17 @@ describe('Service `fhir`', () => {
                 method: 'GET',
                 url: '/user/extra',
                 params,
+            });
+        });
+
+        test('create axios config with inactive mapping', () => {
+            const userInactiveMapping: InactiveMapping = {
+                user: { searchField: 'active', statusField: 'active', value: false },
+            };
+            expect(apiConfigs.list('user', params, 'extra', userInactiveMapping)).toEqual({
+                method: 'GET',
+                url: '/user/extra',
+                params: { ...params, 'active:not': [false] },
             });
         });
     });
@@ -478,6 +491,10 @@ describe('Service `fhir`', () => {
         expect(service).toHaveBeenLastCalledWith(apiConfigs.patch(resource));
     });
 
+    const locationInactiveMapping: InactiveMapping = {
+        Location: { searchField: 'status', statusField: 'status', value: 'inactive' },
+    };
+
     describe('method `markAsDeleted`', () => {
         test('delete unknown resource', () => {
             const resource = {
@@ -485,7 +502,7 @@ describe('Service `fhir`', () => {
                 resourceType: 'Unknown',
             };
             expect(() => {
-                apiConfigs.markAsDeleted(resource);
+                apiConfigs.markAsDeleted(resource, locationInactiveMapping);
             }).toThrow();
         });
 
@@ -494,7 +511,7 @@ describe('Service `fhir`', () => {
                 reference: 'Location/1',
             };
 
-            expect(apiConfigs.markAsDeleted(resource)).toEqual({
+            expect(apiConfigs.markAsDeleted(resource, locationInactiveMapping)).toEqual({
                 method: 'PATCH',
                 url: `/Location/1`,
                 data: {
@@ -520,7 +537,7 @@ describe('Service `fhir`', () => {
 
             await services.deleteFHIRResource(resource);
 
-            expect(service).toHaveBeenLastCalledWith(apiConfigs.markAsDeleted(resource));
+            expect(service).toHaveBeenLastCalledWith(apiConfigs.markAsDeleted(resource, defaultInactiveMapping));
         });
     });
 

@@ -17,6 +17,7 @@ import {
     transformToBundleEntry,
     update,
 } from './apiConfigs';
+import { InactiveMapping } from './apiConfigs';
 import { parseFHIRReference, cleanObject } from '../../utils/fhir';
 
 export async function createFHIRResource<R extends Resource>(
@@ -58,18 +59,20 @@ export async function getFHIRResources<R extends Resource>(
     service: RequestService,
     resourceType: R['resourceType'],
     searchParams: SearchParams,
-    extraPath?: string
+    extraPath?: string,
+    inactiveMapping?: InactiveMapping
 ): Promise<RemoteDataResult<Bundle<WithId<R>>>> {
-    return service(list(resourceType, searchParams, extraPath));
+    return service(list(resourceType, searchParams, extraPath, inactiveMapping));
 }
 
 export async function getAllFHIRResources<R extends Resource>(
     service: RequestService,
     resourceType: string,
     params: SearchParams,
-    extraPath?: string
+    extraPath?: string,
+    inactiveMapping?: InactiveMapping
 ): Promise<RemoteDataResult<Bundle<WithId<R>>>> {
-    const resultBundleResponse = await getFHIRResources<R>(service, resourceType, params, extraPath);
+    const resultBundleResponse = await getFHIRResources<R>(service, resourceType, params, extraPath, inactiveMapping);
 
     if (isFailure(resultBundleResponse)) {
         return resultBundleResponse;
@@ -108,9 +111,10 @@ export async function findFHIRResource<R extends Resource>(
     service: RequestService,
     resourceType: R['resourceType'],
     params: SearchParams,
-    extraPath?: string
+    extraPath?: string,
+    inactiveMapping?: InactiveMapping
 ): Promise<RemoteDataResult<WithId<R>>> {
-    const response = await getFHIRResources<R>(service, resourceType, params, extraPath);
+    const response = await getFHIRResources<R>(service, resourceType, params, extraPath, inactiveMapping);
 
     if (isFailure(response)) {
         return response;
@@ -185,9 +189,10 @@ export async function patchFHIRResource<R extends Resource>(
 
 export async function deleteFHIRResource<R extends Resource>(
     service: RequestService,
-    resource: Reference
+    resource: Reference,
+    inactiveMapping: InactiveMapping
 ): Promise<RemoteDataResult<WithId<R>>> {
-    return service(markAsDeleted(resource));
+    return service(markAsDeleted(resource, inactiveMapping));
 }
 
 export async function forceDeleteFHIRResource<R extends Resource>(
