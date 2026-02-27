@@ -31,6 +31,12 @@ describe('Util `tests`', () => {
             expect(parseFHIRDateTime('2020-10-05 13:30').format(FHIRDateTimeFormat)).toEqual('2020-10-05T13:30:00Z');
             expect(parseFHIRDateTime('2020-10-05 20:00:00').format(FHIRDateTimeFormat)).toEqual('2020-10-05T20:00:00Z');
             expect(parseFHIRDateTime('2020-10-05 20:00:00').format(FHIRDateTimeFormat)).toEqual('2020-10-05T20:00:00Z');
+            expect(parseFHIRDateTime('2020-10-05 20:00:00Z').format(FHIRDateTimeFormat)).toEqual(
+                '2020-10-05T20:00:00Z'
+            );
+            expect(parseFHIRDateTime('2020-10-05 21:00:00+01:00').format(FHIRDateTimeFormat)).toEqual(
+                '2020-10-05T20:00:00Z'
+            );
         });
     });
 
