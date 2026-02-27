@@ -12,8 +12,10 @@ export const parseFHIRTime = (date: string) => moment(date, FHIRTimeFormat);
 export const parseFHIRDate = (date: string) => moment(date, FHIRDateFormat);
 export const parseFHIRDateTime = (date: string) => moment(date);
 
-export const makeFHIRDateTime = (date: string, time = '00:00:00') =>
-    formatFHIRDateTime(moment(`${date}T${time}`, `${FHIRDateFormat}T${FHIRTimeFormat}`));
+export const makeFHIRDateTime = (date: string, time = '00:00:00') => {
+    console.warn('[fhir-react] makeFHIRDateTime is deprecated because it produces date time without timezone');
+    return formatFHIRDateTime(moment(`${date}T${time}`, `${FHIRDateFormat}T${FHIRTimeFormat}`));
+};
 
 export const extractFHIRDate = (date: string) => {
     if (date.length === FHIRDateFormat.length) {
