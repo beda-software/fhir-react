@@ -1,6 +1,6 @@
 {
     "name": "@beda.software/fhir-react",
-    "version": "1.11.0",
+    "version": "1.11.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/beda-software/fhir-react"

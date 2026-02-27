@@ -1,3 +1,12 @@
+## 1.11.1
+
+-   Fix parseFHIRDateTime to work with timezone-offset ISO format #10 (@ruscoder)
+-   Deprecate makeFHIRDateTime
+
+## 1.11.0
+
+-   Pass incative mapping as argument #9 (@dmitryashutov)
+
 ## 1.10.0
 
 -   Add low-level alternative to initServices - initServicesFromService #7
